@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>sispost</title>
+    <script src="menuData.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fffdf9;
+            color: #4a3e3d;
+            min-height: 100dvh;
+            padding: 40px 20px;
+        }
+
+        #header-container {
+            max-width: 1200px;
+            margin: 0 auto 24px auto;
+            border-left: 5px solid #ff9f43;
+            padding-left: 15px;
+        }
+        #header-container h1 { font-size: 32px; color: #d35400; font-weight: bold; margin-bottom: 12px; }
+        #header-container p { font-size: 14px; color: #7f6b69; line-height: 1.6; }
+
+        #main-wrapper { max-width: 1200px; width: 100%; margin: 0 auto; }
+
+        /* 导航过滤标签栏 */
+        .tab-bar-common {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 2px solid #ffeaa7;
+            padding-bottom: 15px;
+        }
+        #tab-filter-bar { margin-bottom: 25px; }
+
+        .filter-tab {
+            background: #fff5e6 !important;
+            color: #d35400 !important;
+            border: 1px solid #fbdcbb;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .filter-tab span { font-size: 11px; color: #ba8a75; margin-left: 4px; }
+        
+        @media (hover: hover) {
+            .filter-tab:hover, .filter-tab:focus { background: #ffe3c4 !important; color: #d35400 !important; }
+        }
+        
+        .filter-tab:active {
+            transform: scale(0.96);
+            background: #ffe3c4 !important;
+        }
+
+        .filter-tab.active, .filter-tab.active:hover, .filter-tab.active:focus {
+            background: #ff9f43 !important;
+            color: #ffffff !important;
+            border-color: #ff9f43 !important;
+            box-shadow: 0 4px 10px rgba(255, 159, 67, 0.25) !important;
+        }
+
+        /* 稳定的列表整行容器 */
+        .list-container-common { display: block; width: 100%; }
+
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 10px;
+            border-bottom: 1px dashed #f5e1cb;
+            transition: background 0.2s ease;
+            width: 100%;
+            gap: 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (hover: hover) {
+            .list-row:hover { background: #fffaf0; }
+        }
+        .list-row:active {
+            background: #fff5e6;
+            transform: scale(0.99);
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .row-title-link {
+            font-size: 14px;
+            color: #3e3433;
+            font-weight: 500;
+            text-decoration: none;
+            line-height: 1.5;
+            cursor: pointer;
+            flex: 1;
+            display: inline-block;
+        }
+
+        .page-count-badge {
+            background: #fef4ea;
+            color: #e67e22;
+            border: 1px solid #fde3ca;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        /* 全屏正文查看器 */
+        #article-viewer-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100dvh;
+            background: #ffffff !important;
+            z-index: 99999;
+        }
+        #viewer-main-flex { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
+
+        #viewer-iframe-wrapper {
+            flex: 1;
+            width: 100%;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            background: #ffffff;
+        }
+        #viewer-iframe { width: 100%; height: 100%; border: none; display: block; background: #ffffff; }
+
+        /* 正文底部控制栏 */
+        #html-control-bar {
+            height: 56px;
+            background: #fffdf9;
+            border-top: 2px solid #ffeaa7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 -4px 15px rgba(211, 84, 0, 0.05);
+            width: 100%;
+        }
+
+        .html-nav-btn {
+            background: #ff9f43;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .html-nav-btn:active:not(:disabled) {
+            transform: scale(0.95);
+            background: #e67e22;
+        }
+        .html-nav-btn:disabled { background: #ebdccb; color: #baad9f; cursor: not-allowed; }
+        #html-page-indicator { font-size: 14px; color: #7f6b69; font-weight: bold; min-width: 80px; text-align: center; }
+
+        /* 左上角悬浮菜单按钮 */
+        #menu-toggle-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 100002;
+            width: 42px;
+            height: 42px;
+            background: #ff9f43;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(211, 84, 0, 0.3);
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease;
+        }
+        #menu-toggle-btn:active { transform: scale(0.9); }
+
+        /* 侧边栏 */
+        #side-nav-drawer {
+            position: fixed;
+            top: 0;
+            left: -380px;
+            width: 380px;
+            height: 100%;
+            background: #fffdf9;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 100010;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 70px 15px 20px 15px;
+            display: flex;
+            flex-direction: column;
+            border-right: 3px solid #ffeaa7;
+            gap: 15px;
+        }
+        #side-nav-drawer.open { left: 0; }
+
+        .drawer-close-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #d35400;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.15s ease;
+        }
+        .drawer-close-btn:active { background: #c0392b; transform: scale(0.98); }
+
+        .drawer-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 4px;
+        }
+
+        #drawer-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 100005;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            #side-nav-drawer { width: 300px; left: -300px; }
+            #html-control-bar { padding: 0 10px; height: 50px; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="catalog-view">
+        <div id="header-container">
+            <h1>☀️ sispost 索引</h1>
+            <p>全自动本地博文检索入口。点击博文标题即可打开正文。</p>
+        </div>
+
+        <div id="main-wrapper">
+            <div id="tab-filter-bar" class="tab-bar-common"></div>
+            <div id="list-container" class="list-container-common">加载目录中...</div>
+        </div>
+    </div>
+
+    <div id="article-viewer-overlay">
+        <button id="menu-toggle-btn" title="打开菜单">☀️</button>
+        <div id="drawer-backdrop"></div>
+
+        <div id="side-nav-drawer">
+            <button id="html-exit-btn" class="drawer-close-btn">返回主页目录 ↩</button>
+            <div class="drawer-scroll-area">
+                <div id="drawer-tab-bar" class="tab-bar-common"></div>
+                <div id="drawer-list-container" class="list-container-common"></div>
+            </div>
+        </div>
+
+        <div id="viewer-main-flex">
+            <div id="viewer-iframe-wrapper">
+                <iframe id="viewer-iframe" src="about:blank"></iframe>
+            </div>
+
+            <div id="html-control-bar">
+                <button id="html-prev-btn" class="html-nav-btn">← 上一页</button>
+                <span id="html-page-indicator">第 1 / 1 页</span>
+                <button id="html-next-btn" class="html-nav-btn">下一页 →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activePostPages = [];
+        let currentHtmlPageIndex = -1;
+        let allMergedPostsGlobal = [];
+
+        // 🛠️ 核心修改：定义固定的强控 CSS 字符串
+        const PATCH_CSS = `
+            .single-file-lightbox, .local-image-viewer, [class*="lightbox"], [class*="viewer"] {
+                display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+            }
+            html { width: 100% !important; background: #ffffff !important; display: flex !important; justify-content: center !important; }
+            body { width: 100% !important; max-width: 850px !important; margin: 0 auto !important; padding: 16px 12px !important; overflow-x: hidden !important; box-sizing: border-box !important; display: block !important; background: #ffffff !important; }
+            #wrapper, #content, .grid-16-8, .article, .aside, .mod, .mod-bd, #topic-content.topic-content, .comment-item, .reply-doc, .topic-doc, .rich-content, .topic-richtext, .reply-content, .markdown, table, tbody, tr, td, th, div, p, section, blockquote {
+                display: block !important; width: 100% !important; max-width: 100% !important; min-width: 0 !important; float: none !important; box-sizing: border-box !important; margin-left: auto !important; margin-right: auto !important;
+            }
+            table { table-layout: fixed !important; word-wrap: break-word !important; }
+            span, font, a, p, td { display: inline-block !important; width: auto !important; max-width: 100% !important; white-space: normal !important; word-wrap: break-word !important; word-break: break-all !important; }
+            * { word-wrap: break-word !important; word-break: break-all !important; white-space: normal !important; flex-shrink: 1 !important; }
+            .user-face, .avatar { width: auto !important; float: none !important; display: flex !important; align-items: center; gap: 10px; margin-bottom: 8px !important; }
+            .user-face img, .avatar img, img.pil { width: 36px !important; height: 36px !important; max-width: 36px !important; margin: 0 !important; display: inline-block !important; }
+            img, .topic-richtext img, .reply-content img, .markdown img { width: 100% !important; max-width: 100% !important; height: auto !important; object-fit: contain !important; display: block !important; margin: 12px auto !important; }
+            @media (max-width: 768px) {
+                html, body { padding: 10px 8px !important; }
+                * { max-width: 100% !important; min-width: 0 !important; }
+                span, font, a { display: inline !important; }
+            }
+        `;
+
+        function init() {
+            if (typeof thispost === 'undefined' || !Array.isArray(thispost) || thispost.length === 0) {
+                document.getElementById('list-container').innerHTML = '<div style="color:#e74c3c; padding: 20px;">未检测到有效数据</div>';
+                return;
+            }
+
+            let totalCount = 0;
+            thispost.forEach(cat => {
+                totalCount += cat.posts.length;
+                cat.posts.forEach(p => allMergedPostsGlobal.push(p));
+            });
+            allMergedPostsGlobal.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
+
+            buildTabsAndList('tab-filter-bar', 'list-container', totalCount, 'all');
+            buildTabsAndList('drawer-tab-bar', 'drawer-list-container', totalCount, 'all', true);
+
+            const toggleBtn = document.getElementById('menu-toggle-btn');
+            const drawer = document.getElementById('side-nav-drawer');
+            const backdrop = document.getElementById('drawer-backdrop');
+
+            function toggleDrawer() {
+                if (drawer.classList.contains('open')) {
+                    drawer.classList.remove('open');
+                    backdrop.style.display = 'none';
+                    toggleBtn.innerText = '☀️';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.style.display = 'block';
+                    toggleBtn.innerText = '✕';
+                }
+            }
+
+            toggleBtn.onclick = toggleDrawer;
+            backdrop.onclick = toggleDrawer;
+
+            document.getElementById('html-prev-btn').onclick = () => { if (currentHtmlPageIndex > 0) jumpToHtmlPage(currentHtmlPageIndex - 1); };
+            document.getElementById('html-next-btn').onclick = () => { if (currentHtmlPageIndex < activePostPages.length - 1) jumpToHtmlPage(currentHtmlPageIndex + 1); };
+            document.getElementById('html-exit-btn').onclick = () => { toggleDrawer(); closeArticleViewer(); };
+        }
+
+        // 🛠️ 核心修改：此函数现在用来在内存中预处理并拼接完美 HTML 字符串
+        function processAndInjectHtmlText(htmlText) {
+            // 1. 如果没有 viewport 标签，先在 <head> 里插一个
+            if (!htmlText.includes('name="viewport"') && !htmlText.includes("name='viewport'")) {
+                htmlText = htmlText.replace('<head>', '<head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">');
+            }
+
+            // 2. 直接注入强控样式，放在 </head> 之前确保覆盖优先级高
+            const patchStyleTag = `<style id="sispost-patch">${PATCH_CSS}</style></head>`;
+            htmlText = htmlText.replace('</head>', patchStyleTag);
+
+            return htmlText;
+        }
+
+        function buildTabsAndList(tabBarId, listContainerId, totalCount, defaultCat, isDrawer = false) {
+            const tabBar = document.getElementById(tabBarId);
+            tabBar.innerHTML = '';
+
+            const allTab = document.createElement('button');
+            allTab.className = (defaultCat === 'all') ? 'filter-tab active' : 'filter-tab';
+            allTab.setAttribute('data-cat', 'all');
+            allTab.innerHTML = `☀️ 全部 <span>${totalCount}</span>`;
+            allTab.onclick = () => {
+                switchActiveTabGlobal('all');
+                renderListView(listContainerId, allMergedPostsGlobal, isDrawer);
+            };
+            tabBar.appendChild(allTab);
+
+            thispost.forEach(catData => {
+                const tab = document.createElement('button');
+                tab.className = (defaultCat === catData.category) ? 'filter-tab active' : 'filter-tab';
+                tab.setAttribute('data-cat', catData.category);
+                tab.innerHTML = `📂 ${catData.category} <span>${catData.posts.length}</span>`;
+                tab.onclick = () => {
+                    switchActiveTabGlobal(catData.category);
+                    renderListView(listContainerId, catData.posts, isDrawer);
+                };
+                tabBar.appendChild(tab);
+            });
+
+            if(!isDrawer) {
+                renderListView(listContainerId, allMergedPostsGlobal, isDrawer);
+            }
+        }
+
+        function switchActiveTabGlobal(targetCategory) {
+            document.querySelectorAll('.filter-tab').forEach(btn => {
+                btn.classList.remove('active');
+                btn.blur();
+            });
+
+            document.querySelectorAll(`.filter-tab[data-cat="${targetCategory}"]`).forEach(btn => {
+                btn.classList.add('active');
+            });
+
+            let targetPosts = allMergedPostsGlobal;
+            if (targetCategory !== 'all') {
+                const catObj = thispost.find(c => c.category === targetCategory);
+                if (catObj) targetPosts = catObj.posts;
+            }
+
+            renderListView('list-container', targetPosts, false);
+            renderListView('drawer-list-container', targetPosts, true);
+        }
+
+        function renderListView(listContainerId, postsArray, isDrawer = false) {
+            const listContainer = document.getElementById(listContainerId);
+            listContainer.innerHTML = '';
+
+            if (!postsArray || postsArray.length === 0) {
+                listContainer.innerHTML = '<div style="color:#999; padding: 15px;">暂无内容</div>';
+                return;
+            }
+
+            postsArray.forEach(post => {
+                const row = document.createElement('div');
+                row.className = 'list-row';
+
+                const titleWrapper = document.createElement('div');
+                titleWrapper.className = 'title-wrapper';
+
+                const titleLink = document.createElement('span');
+                titleLink.className = 'row-title-link';
+                titleLink.innerText = post.title;
+
+                titleLink.onclick = () => {
+                    openArticleViewer(post.pages, 0);
+                    if (isDrawer) {
+                        document.getElementById('side-nav-drawer').classList.remove('open');
+                        document.getElementById('drawer-backdrop').style.display = 'none';
+                        document.getElementById('menu-toggle-btn').innerText = '☀️';
+                    }
+                };
+                titleWrapper.appendChild(titleLink);
+
+                const badge = document.createElement('span');
+                badge.className = 'page-count-badge';
+                badge.innerText = `${post.total_pages}页`;
+                titleWrapper.appendChild(badge);
+
+                row.appendChild(titleWrapper);
+                listContainer.appendChild(row);
+            });
+        }
+
+        function openArticleViewer(pagesArray, index) {
+            activePostPages = pagesArray;
+            document.getElementById('catalog-view').style.display = 'none';
+            document.getElementById('article-viewer-overlay').style.display = 'block';
+            jumpToHtmlPage(index);
+        }
+
+        // 🛠️ 核心修改：通过 fetch 抓取纯文本并拼接，用 srcdoc 直接喂给 iframe
+        function jumpToHtmlPage(index) {
+            if (index < 0 || index >= activePostPages.length) return;
+            currentHtmlPageIndex = index;
+
+            const iframe = document.getElementById('viewer-iframe');
+            const targetPath = activePostPages[index].path;
+
+            // 异步获取目标网页的 HTML 字符串
+            fetch(targetPath)
+                .then(response => {
+                    if (!response.ok) throw new Error('网络请求错误');
+                    return response.text();
+                })
+                .then(htmlText => {
+                    // 1. 在网页被渲染之前，在内存中完成全套样式的重组和锁死
+                    const finalProcessedHtml = processAndInjectHtmlText(htmlText);
+
+                    // 2. 使用 srcdoc 瞬间投喂。由于该字符串一出生就带着补丁，浏览器首帧渲染就是完美的，根本不会发生任何白闪或错位！
+                    iframe.srcdoc = finalProcessedHtml;
+                })
+                .catch(err => {
+                    console.error('无法无缝加载页面，退回到旧的直接加载模式:', err);
+                    iframe.removeAttribute('srcdoc');
+                    iframe.src = targetPath;
+                });
+
+            document.getElementById('html-page-indicator').innerText = `第 ${index + 1} / ${activePostPages.length} 页`;
+            document.getElementById('html-prev-btn').disabled = (index === 0);
+            document.getElementById('html-next-btn').disabled = (index === activePostPages.length - 1);
+
+            document.getElementById('viewer-iframe-wrapper').scrollTop = 0;
+        }
+
+        function closeArticleViewer() {
+            document.getElementById('article-viewer-overlay').style.display = 'none';
+            document.getElementById('catalog-view').style.display = 'block';
+            document.getElementById('viewer-iframe').removeAttribute('srcdoc');
+            document.getElementById('viewer-iframe').src = 'about:blank';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
