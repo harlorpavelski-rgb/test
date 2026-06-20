@@ -302,29 +302,6 @@
         let currentHtmlPageIndex = -1;
         let allMergedPostsGlobal = [];
 
-        // 🛠️ 核心修改：定义固定的强控 CSS 字符串
-        const PATCH_CSS = `
-            .single-file-lightbox, .local-image-viewer, [class*="lightbox"], [class*="viewer"] {
-                display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
-            }
-            html { width: 100% !important; background: #ffffff !important; display: flex !important; justify-content: center !important; }
-            body { width: 100% !important; max-width: 850px !important; margin: 0 auto !important; padding: 16px 12px !important; overflow-x: hidden !important; box-sizing: border-box !important; display: block !important; background: #ffffff !important; }
-            #wrapper, #content, .grid-16-8, .article, .aside, .mod, .mod-bd, #topic-content.topic-content, .comment-item, .reply-doc, .topic-doc, .rich-content, .topic-richtext, .reply-content, .markdown, table, tbody, tr, td, th, div, p, section, blockquote {
-                display: block !important; width: 100% !important; max-width: 100% !important; min-width: 0 !important; float: none !important; box-sizing: border-box !important; margin-left: auto !important; margin-right: auto !important;
-            }
-            table { table-layout: fixed !important; word-wrap: break-word !important; }
-            span, font, a, p, td { display: inline-block !important; width: auto !important; max-width: 100% !important; white-space: normal !important; word-wrap: break-word !important; word-break: break-all !important; }
-            * { word-wrap: break-word !important; word-break: break-all !important; white-space: normal !important; flex-shrink: 1 !important; }
-            .user-face, .avatar { width: auto !important; float: none !important; display: flex !important; align-items: center; gap: 10px; margin-bottom: 8px !important; }
-            .user-face img, .avatar img, img.pil { width: 36px !important; height: 36px !important; max-width: 36px !important; margin: 0 !important; display: inline-block !important; }
-            img, .topic-richtext img, .reply-content img, .markdown img { width: 100% !important; max-width: 100% !important; height: auto !important; object-fit: contain !important; display: block !important; margin: 12px auto !important; }
-            @media (max-width: 768px) {
-                html, body { padding: 10px 8px !important; }
-                * { max-width: 100% !important; min-width: 0 !important; }
-                span, font, a { display: inline !important; }
-            }
-        `;
-
         function init() {
             if (typeof thispost === 'undefined' || !Array.isArray(thispost) || thispost.length === 0) {
                 document.getElementById('list-container').innerHTML = '<div style="color:#e74c3c; padding: 20px;">未检测到有效数据</div>';
@@ -363,20 +340,6 @@
             document.getElementById('html-prev-btn').onclick = () => { if (currentHtmlPageIndex > 0) jumpToHtmlPage(currentHtmlPageIndex - 1); };
             document.getElementById('html-next-btn').onclick = () => { if (currentHtmlPageIndex < activePostPages.length - 1) jumpToHtmlPage(currentHtmlPageIndex + 1); };
             document.getElementById('html-exit-btn').onclick = () => { toggleDrawer(); closeArticleViewer(); };
-        }
-
-        // 🛠️ 核心修改：此函数现在用来在内存中预处理并拼接完美 HTML 字符串
-        function processAndInjectHtmlText(htmlText) {
-            // 1. 如果没有 viewport 标签，先在 <head> 里插一个
-            if (!htmlText.includes('name="viewport"') && !htmlText.includes("name='viewport'")) {
-                htmlText = htmlText.replace('<head>', '<head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">');
-            }
-
-            // 2. 直接注入强控样式，放在 </head> 之前确保覆盖优先级高
-            const patchStyleTag = `<style id="sispost-patch">${PATCH_CSS}</style></head>`;
-            htmlText = htmlText.replace('</head>', patchStyleTag);
-
-            return htmlText;
         }
 
         function buildTabsAndList(tabBarId, listContainerId, totalCount, defaultCat, isDrawer = false) {
@@ -477,7 +440,7 @@
             jumpToHtmlPage(index);
         }
 
-        // 🛠️ 核心修改：通过 fetch 抓取纯文本并拼接，用 srcdoc 直接喂给 iframe
+        // 直接改变 iframe 的 src，实现最原始、无干扰的 HTML 直接展示
         function jumpToHtmlPage(index) {
             if (index < 0 || index >= activePostPages.length) return;
             currentHtmlPageIndex = index;
@@ -485,24 +448,9 @@
             const iframe = document.getElementById('viewer-iframe');
             const targetPath = activePostPages[index].path;
 
-            // 异步获取目标网页的 HTML 字符串
-            fetch(targetPath)
-                .then(response => {
-                    if (!response.ok) throw new Error('网络请求错误');
-                    return response.text();
-                })
-                .then(htmlText => {
-                    // 1. 在网页被渲染之前，在内存中完成全套样式的重组和锁死
-                    const finalProcessedHtml = processAndInjectHtmlText(htmlText);
-
-                    // 2. 使用 srcdoc 瞬间投喂。由于该字符串一出生就带着补丁，浏览器首帧渲染就是完美的，根本不会发生任何白闪或错位！
-                    iframe.srcdoc = finalProcessedHtml;
-                })
-                .catch(err => {
-                    console.error('无法无缝加载页面，退回到旧的直接加载模式:', err);
-                    iframe.removeAttribute('srcdoc');
-                    iframe.src = targetPath;
-                });
+            // 清除旧的 srcdoc，直接加载原帖物理路径
+            iframe.removeAttribute('srcdoc');
+            iframe.src = targetPath;
 
             document.getElementById('html-page-indicator').innerText = `第 ${index + 1} / ${activePostPages.length} 页`;
             document.getElementById('html-prev-btn').disabled = (index === 0);
