@@ -49,6 +49,31 @@
             right: 0;
         }
 
+        /* 搜索框统一样式 */
+        .search-box-wrapper {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            font-size: 14px;
+            border: 1px solid #fbdcbb;
+            background: #fffcf7;
+            border-radius: 8px;
+            color: #4a3e3d;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .search-input::placeholder {
+            color: #ebdccb;
+        }
+        .search-input:focus {
+            border-color: #ff9f43;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(255, 159, 67, 0.15);
+        }
+
         /* 导航过滤标签栏 */
         .tab-bar-common {
             display: flex;
@@ -219,7 +244,7 @@
             color: #e67e22;
         }
 
-        /* 用于过渡的加载状态气泡提示层（仅在加载时短暂提示，触底逻辑移入iframe） */
+        /* 用于过渡的加载状态气泡提示层 */
         #viewer-floating-tip {
             position: absolute;
             bottom: 66px;
@@ -370,7 +395,7 @@
 
         .immersive-hide { display: none !important; }
 
-        /* 高级半透明提示蒙版弹窗 - 升级为全自适应高宽与内容滚动机制 */
+        /* 半透明提示蒙版弹窗 */
         #custom-help-modal {
             display: none;
             position: fixed;
@@ -454,6 +479,9 @@
         </div>
 
         <div id="main-wrapper">
+            <div class="search-box-wrapper" id="catalog-search-wrapper">
+                <input type="text" id="catalog-search-input" class="search-input" placeholder="🔍 搜索主页博文标题...">
+            </div>
             <div id="tab-filter-bar" class="tab-bar-common"></div>
             <div id="list-container" class="list-container-common">加载目录中...</div>
         </div>
@@ -464,6 +492,9 @@
         <div id="drawer-backdrop"></div>
 
         <div id="side-nav-drawer" class="from-left">
+            <div class="search-box-wrapper" id="drawer-search-wrapper">
+                <input type="text" id="drawer-search-input" class="search-input" placeholder="🔍 搜索侧边栏标题...">
+            </div>
             <div class="drawer-scroll-area">
                 <div id="drawer-tab-bar" class="tab-bar-common"></div>
                 <div id="drawer-list-container" class="list-container-common"></div>
@@ -525,6 +556,10 @@
         let isImmersiveMode = false;
         let drawerDirection = 'left';
 
+        // 搜索关键词暂存
+        let catalogSearchQuery = '';
+        let drawerSearchQuery = '';
+
         function init() {
             if (typeof thispost === 'undefined' || !Array.isArray(thispost) || thispost.length === 0) {
                 document.getElementById('list-container').innerHTML = '<div style="color:#e74c3c; padding: 20px;">未检测到有效数据</div>';
@@ -540,6 +575,19 @@
 
             buildTabsAndList('tab-filter-bar', 'list-container', totalCount, 'all');
             buildTabsAndList('drawer-tab-bar', 'drawer-list-container', totalCount, 'all', true);
+
+            // 绑定搜索框实时监听事件
+            document.getElementById('catalog-search-input').oninput = function(e) {
+                catalogSearchQuery = e.target.value.trim().toLowerCase();
+                const activeCat = getCurrentlyActiveCategory('tab-filter-bar');
+                filterAndRenderList('list-container', activeCat, catalogSearchQuery, false);
+            };
+
+            document.getElementById('drawer-search-input').oninput = function(e) {
+                drawerSearchQuery = e.target.value.trim().toLowerCase();
+                const activeCat = getCurrentlyActiveCategory('drawer-tab-bar');
+                filterAndRenderList('drawer-list-container', activeCat, drawerSearchQuery, true);
+            };
 
             const toggleBtn = document.getElementById('menu-toggle-btn');
             const drawer = document.getElementById('side-nav-drawer');
@@ -642,7 +690,7 @@
             });
 
             if(!isDrawer) {
-                renderListView(listContainerId, allMergedPostsGlobal, isDrawer);
+                filterAndRenderList('list-container', 'all', catalogSearchQuery, false);
             }
         }
 
@@ -651,26 +699,30 @@
             const activeBtn = document.querySelector(`#drawer-tab-bar .filter-tab[data-cat="${targetCategory}"]`);
             if (activeBtn) activeBtn.classList.add('active');
 
-            let targetPosts = allMergedPostsGlobal;
-            if (targetCategory !== 'all') {
-                const catObj = thispost.find(c => c.category === targetCategory);
-                if (catObj) targetPosts = catObj.posts;
-            }
-            renderListView('drawer-list-container', targetPosts, true);
+            filterAndRenderList('drawer-list-container', targetCategory, drawerSearchQuery, true);
         }
 
         function switchActiveTabGlobal(targetCategory) {
             document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll(`.filter-tab[data-cat="${targetCategory}"]`).forEach(btn => btn.classList.add('active'));
 
+            filterAndRenderList('list-container', targetCategory, catalogSearchQuery, false);
+            filterAndRenderList('drawer-list-container', targetCategory, drawerSearchQuery, true);
+        }
+
+        // 抽离出来的过滤与渲染核心逻辑，结合了分类标签与搜索框
+        function filterAndRenderList(listContainerId, category, searchQuery, isDrawer = false) {
             let targetPosts = allMergedPostsGlobal;
-            if (targetCategory !== 'all') {
-                const catObj = thispost.find(c => c.category === targetCategory);
+            if (category !== 'all') {
+                const catObj = thispost.find(c => c.category === category);
                 if (catObj) targetPosts = catObj.posts;
             }
 
-            renderListView('list-container', targetPosts, false);
-            renderListView('drawer-list-container', targetPosts, true);
+            if (searchQuery) {
+                targetPosts = targetPosts.filter(post => post.title.toLowerCase().includes(searchQuery));
+            }
+
+            renderListView(listContainerId, targetPosts, isDrawer);
         }
 
         function renderListView(listContainerId, postsArray, isDrawer = false) {
@@ -678,7 +730,7 @@
             listContainer.innerHTML = '';
 
             if (!postsArray || postsArray.length === 0) {
-                listContainer.innerHTML = '<div style="color:#999; padding: 15px;">暂无内容</div>';
+                listContainer.innerHTML = '<div style="color:#999; padding: 15px; text-align:center; font-size:13px;">暂无匹配内容</div>';
                 return;
             }
 
@@ -686,7 +738,6 @@
                 const row = document.createElement('div');
                 row.className = 'list-row';
 
-                // 主页面或侧边栏，只要文章名匹配且标签一致，就高亮
                 if (currentReadingPost && currentReadingPost.title === post.title) {
                     const activeTabId = isDrawer ? 'drawer-tab-bar' : 'tab-filter-bar';
                     if (getCurrentlyActiveCategory(activeTabId) === currentOpenedFromTab) {
@@ -736,6 +787,7 @@
 
         function closeArticleViewer() {
             document.getElementById('catalog-view').style.display = 'block';
+            document.getElementById('article-viewer-overlay').style.none = 'none';
             document.getElementById('article-viewer-overlay').style.display = 'none';
             document.getElementById('viewer-iframe').src = 'about:blank';
 
@@ -996,8 +1048,6 @@
                     el.classList.remove('immersive-hide');
                 }
             });
-
-            // 已移除了在沉浸清屏模式下隐藏 iframe 内部 injected-bottom-tip 提示的错误逻辑
         }
 
         window.onload = init;
