@@ -192,8 +192,31 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 75%;
+            max-width: 60%;
             margin: 0 auto;
+            text-align: center;
+        }
+
+        /* 极简左上角纯文本返回符号 */
+        .html-back-raw-btn {
+            background: transparent;
+            border: none;
+            color: #ff9f43;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease, color 0.15s;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .html-back-raw-btn:active {
+            transform: scale(0.85);
+            color: #e67e22;
         }
 
         /* 用于过渡的加载状态气泡提示层（仅在加载时短暂提示，触底逻辑移入iframe） */
@@ -328,25 +351,6 @@
         #side-nav-drawer.from-right { right: -340px; left: auto; border-left: 3px solid #ffeaa7; border-right: none; }
         #side-nav-drawer.from-right.open { right: 0; }
 
-        .drawer-close-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            background: #d35400;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent;
-            transition: all 0.15s ease;
-        }
-        .drawer-close-btn:active { background: #c0392b; transform: scale(0.98); }
-
         .drawer-scroll-area {
             flex: 1;
             overflow-y: auto;
@@ -366,7 +370,7 @@
 
         .immersive-hide { display: none !important; }
 
-        /* 美观的高级半透明提示蒙版弹窗 */
+        /* 高级半透明提示蒙版弹窗 - 升级为全自适应高宽与内容滚动机制 */
         #custom-help-modal {
             display: none;
             position: fixed;
@@ -379,35 +383,52 @@
             justify-content: center;
             opacity: 0;
             transition: opacity 0.2s ease;
+            padding: 20px;
         }
         .help-modal-card {
             background: rgba(255, 253, 249, 0.95);
             border: 1px solid rgba(255, 159, 67, 0.3);
-            width: 90%;
-            max-width: 320px;
+            width: 100%;
+            max-width: 360px;
+            max-height: 85dvh;
             border-radius: 16px;
             padding: 24px;
             box-shadow: 0 10px 30px rgba(211, 84, 0, 0.15);
             text-align: center;
             transform: scale(0.9);
             transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
         }
-        .help-modal-card h3 { color: #d35400; font-size: 18px; margin-bottom: 16px; font-weight: bold; }
-        .help-item { text-align: left; background: #fffcf7; border: 1px solid #fcebda; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        .help-modal-card h3 { color: #d35400; font-size: 18px; margin-bottom: 16px; font-weight: bold; flex-shrink: 0; }
+
+        /* 提示内容支持自适应滚动 */
+        .help-items-scroll-zone {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .help-item { background: #fffcf7; border: 1px solid #fcebda; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        .help-item:last-child { margin-bottom: 0; }
         .help-item p:first-child { font-weight: bold; color: #ff9f43; font-size: 13px; margin-bottom: 4px; }
         .help-item p:last-child { color: #7f6b69; font-size: 12px; line-height: 1.4; }
+
         .help-close-confirm {
             background: #ff9f43;
             color: white;
             border: none;
             width: 100%;
-            padding: 10px;
+            padding: 11px;
             border-radius: 8px;
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 6px;
+            flex-shrink: 0;
             transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
         .help-close-confirm:active { background: #e67e22; }
 
@@ -447,12 +468,11 @@
                 <div id="drawer-tab-bar" class="tab-bar-common"></div>
                 <div id="drawer-list-container" class="list-container-common"></div>
             </div>
-            <button id="html-exit-btn" class="drawer-close-btn">返回主页目录 ↩</button>
         </div>
 
         <div id="viewer-main-flex">
             <div id="html-header-bar">
-                <div style="width:50px;"></div>
+                <button id="html-raw-back-btn" class="html-back-raw-btn" title="返回主页目录">←</button>
                 <div id="html-header-title">正在阅读文章</div>
                 <button id="viewer-help-btn" class="help-btn">💡 提示</button>
             </div>
@@ -474,13 +494,23 @@
     <div id="custom-help-modal">
         <div class="help-modal-card" id="help-modal-card">
             <h3>📖 快捷操作指南</h3>
-            <div class="help-item">
-                <p>✨ 双击清屏</p>
-                <p>在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
-            </div>
-            <div class="help-item">
-                <p>🔄 左右拖拽变轨</p>
-                <p>右侧小太阳可以自由上下拖动。若将其拖至屏幕左侧，侧边栏以后将改为从左滑出；反之则从右滑出。</p>
+            <div class="help-items-scroll-zone">
+                <div class="help-item">
+                    <p>🌻 开启阅读</p>
+                    <p>点击博文标题即可打开正文。</p>
+                </div>
+                <div class="help-item">
+                    <p>✨ 双击清屏</p>
+                    <p>在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
+                </div>
+                 <div class="help-item">
+                    <p>☀️ 侧边栏唤起</p>
+                    <p>点击阅读正文区域右上角小太阳可唤出侧边栏。</p>
+                </div>
+                <div class="help-item">
+                    <p>🔄 左右拖拽变轨</p>
+                    <p>阅读正文区小太阳可以自由上下左右拖动。若将其拖至屏幕左侧，侧边栏以后将改为从左滑出；反之则从右滑出。</p>
+                </div>
             </div>
             <button class="help-close-confirm" id="help-close-btn">知道了</button>
         </div>
@@ -522,7 +552,7 @@
                     toggleBtn.innerText = '☀️';
                 } else {
                     if (currentReadingPost) {
-                        switchActiveTabGlobal(currentOpenedFromTab);
+                        switchDrawerTabOnly(currentOpenedFromTab);
                     }
                     drawer.classList.add('open');
                     backdrop.style.display = 'block';
@@ -538,7 +568,9 @@
 
             document.getElementById('html-prev-btn').onclick = () => { if (currentHtmlPageIndex > 0) jumpToHtmlPage(currentHtmlPageIndex - 1); };
             document.getElementById('html-next-btn').onclick = () => { if (currentHtmlPageIndex < activePostPages.length - 1) jumpToHtmlPage(currentHtmlPageIndex + 1); };
-            document.getElementById('html-exit-btn').onclick = () => { toggleDrawer(); closeArticleViewer(); };
+
+            // 绑定左上角纯文本返回动作
+            document.getElementById('html-raw-back-btn').onclick = () => { closeArticleViewer(); };
 
             document.getElementById('catalog-help-btn').onclick = openHelpModal;
             document.getElementById('viewer-help-btn').onclick = openHelpModal;
@@ -654,9 +686,10 @@
                 const row = document.createElement('div');
                 row.className = 'list-row';
 
-                if (isDrawer && currentReadingPost && currentReadingPost.title === post.title) {
-                    const activeDrawerTab = getCurrentlyActiveCategory('drawer-tab-bar');
-                    if (activeDrawerTab === currentOpenedFromTab) {
+                // 主页面或侧边栏，只要文章名匹配且标签一致，就高亮
+                if (currentReadingPost && currentReadingPost.title === post.title) {
+                    const activeTabId = isDrawer ? 'drawer-tab-bar' : 'tab-filter-bar';
+                    if (getCurrentlyActiveCategory(activeTabId) === currentOpenedFromTab) {
                         row.classList.add('active-reading');
                     }
                 }
@@ -687,7 +720,6 @@
                         document.getElementById('side-nav-drawer').classList.remove('open');
                         document.getElementById('drawer-backdrop').style.display = 'none';
                         document.getElementById('menu-toggle-btn').innerText = '☀️';
-                        switchDrawerTabOnly(currentOpenedFromTab);
                     }
                 };
 
@@ -706,7 +738,17 @@
             document.getElementById('catalog-view').style.display = 'block';
             document.getElementById('article-viewer-overlay').style.display = 'none';
             document.getElementById('viewer-iframe').src = 'about:blank';
-            currentReadingPost = null;
+
+            // 关键：返回时让主页目录强制与其点进前的过滤分类标签保持完全同步，并在列表中高亮记忆该博文行
+            switchActiveTabGlobal(currentOpenedFromTab);
+
+            // 自动将视图平滑滚动到刚才正在看的那一行
+            setTimeout(() => {
+                const targetRow = document.querySelector('#list-container .list-row.active-reading');
+                if (targetRow) {
+                    targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
+            }, 60);
         }
 
         function jumpToHtmlPage(index) {
@@ -799,7 +841,6 @@
             }
         }
 
-        // 🆕 核心：等待彻底加载完成后，将长条直接注入次一级背景的 body 最底部
         function initIframeAndScrollListeners() {
             const iframe = document.getElementById('viewer-iframe');
 
@@ -810,19 +851,16 @@
                     const iframeDoc = iframeWindow.document || iframe.contentDocument;
 
                     if (iframeDoc && iframeDoc.body) {
-                        // 1. 获取文章次一级背景颜色，让长条背景完美匹配它
                         let bgStyle = iframeWindow.getComputedStyle(iframeDoc.body).backgroundColor;
                         if (!bgStyle || bgStyle === 'transparent' || bgStyle === 'rgba(0, 0, 0, 0)') {
-                            bgStyle = '#ffffff'; // 兜底使用白色
+                            bgStyle = '#ffffff';
                         }
 
-                        // 2. 如果里面没注入过，则动态创建并塞入长条
                         if (!iframeDoc.getElementById('injected-bottom-tip')) {
                             const tipBar = iframeDoc.createElement('div');
                             tipBar.id = 'injected-bottom-tip';
                             tipBar.innerText = '💡 已阅读到文章最底部';
 
-                            // 3. 施加样式：让它衔接次一级下沿，文字风格贴近阅读器
                             tipBar.style.cssText = `
                                 width: 100%;
                                 height: 32px;
@@ -841,7 +879,6 @@
                             iframeDoc.body.appendChild(tipBar);
                         }
 
-                        // 4. 挂载双击清屏事件
                         iframeDoc.addEventListener('dblclick', handleImmersiveToggle);
                     }
                 } catch (e) {
@@ -922,6 +959,22 @@
             btn.addEventListener('touchstart', onStart, {passive: true});
             window.addEventListener('touchmove', onMove, {passive: false});
             window.addEventListener('touchend', onEnd, {passive: true});
+
+            window.addEventListener('resize', () => {
+                if (isDragging) return;
+
+                const topBoundary = 44 + 4;
+                const bottomBoundary = window.innerHeight - 56 - btn.offsetHeight - 4;
+                let currentTop = btn.offsetTop;
+                currentTop = Math.max(topBoundary, Math.min(bottomBoundary, currentTop));
+                btn.style.top = currentTop + 'px';
+
+                if (drawerDirection === 'left') {
+                    btn.style.left = '15px';
+                } else {
+                    btn.style.left = (window.innerWidth - btn.offsetWidth - 15) + 'px';
+                }
+            });
         }
 
         function initDoubleClickFeature() {
@@ -944,7 +997,6 @@
                 }
             });
 
-            // 同时将隐藏指令投射给内部
             try {
                 const iframeDoc = document.getElementById('viewer-iframe').contentWindow.document;
                 const innerTip = iframeDoc.getElementById('injected-bottom-tip');
