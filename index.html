@@ -501,7 +501,7 @@
                 </div>
                 <div class="help-item">
                     <p>✨ 双击清屏</p>
-                    <p>在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
+                    <p>加载完成后，在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
                 </div>
                  <div class="help-item">
                     <p>☀️ 侧边栏唤起</p>
@@ -997,13 +997,7 @@
                 }
             });
 
-            try {
-                const iframeDoc = document.getElementById('viewer-iframe').contentWindow.document;
-                const innerTip = iframeDoc.getElementById('injected-bottom-tip');
-                if (innerTip) {
-                    innerTip.style.display = isImmersiveMode ? 'none' : 'block';
-                }
-            } catch(e){}
+            // 已移除了在沉浸清屏模式下隐藏 iframe 内部 injected-bottom-tip 提示的错误逻辑
         }
 
         window.onload = init;
