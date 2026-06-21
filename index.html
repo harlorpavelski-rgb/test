@@ -551,7 +551,7 @@
         let activePostPages = [];
         let currentHtmlPageIndex = -1;
         let allMergedPostsGlobal = [];
-        let currentReadingPost = null;
+        let currentReadingPostUniqueKey = null; // 用于存储当前阅读文章的唯一路径标识符
         let currentOpenedFromTab = 'all';
         let isImmersiveMode = false;
         let drawerDirection = 'left';
@@ -559,6 +559,13 @@
         // 搜索关键词暂存
         let catalogSearchQuery = '';
         let drawerSearchQuery = '';
+
+        // 生成博文唯一标识符的辅助函数（结合名称和第一页路径）
+        function getPostUniqueKey(post) {
+            if (!post) return null;
+            let firstPagePath = (post.pages && post.pages[0]) ? post.pages[0].path : '';
+            return `${post.title}_${post.total_pages}_${firstPagePath}`;
+        }
 
         function init() {
             if (typeof thispost === 'undefined' || !Array.isArray(thispost) || thispost.length === 0) {
@@ -599,8 +606,8 @@
                     backdrop.style.display = 'none';
                     toggleBtn.innerText = '☀️';
                 } else {
-                    if (currentReadingPost) {
-                        switchDrawerTabOnly(currentOpenedFromTab);
+                    if (currentReadingPostUniqueKey) {
+                        switchDrawerTabOnly(getCurrentlyActiveCategory('drawer-tab-bar'));
                     }
                     drawer.classList.add('open');
                     backdrop.style.display = 'block';
@@ -738,11 +745,9 @@
                 const row = document.createElement('div');
                 row.className = 'list-row';
 
-                if (currentReadingPost && currentReadingPost.title === post.title) {
-                    const activeTabId = isDrawer ? 'drawer-tab-bar' : 'tab-filter-bar';
-                    if (getCurrentlyActiveCategory(activeTabId) === currentOpenedFromTab) {
-                        row.classList.add('active-reading');
-                    }
+                // 核心重构：移除标签必须相同的硬性限制，改用基于唯一路径的 UniqueKey 做精准匹配
+                if (currentReadingPostUniqueKey && currentReadingPostUniqueKey === getPostUniqueKey(post)) {
+                    row.classList.add('active-reading');
                 }
 
                 const titleWrapper = document.createElement('div');
@@ -762,8 +767,8 @@
 
                 row.onclick = () => {
                     currentOpenedFromTab = isDrawer ? getCurrentlyActiveCategory('drawer-tab-bar') : getCurrentlyActiveCategory('tab-filter-bar');
+                    currentReadingPostUniqueKey = getPostUniqueKey(post); // 锁定唯一路径Key
 
-                    currentReadingPost = post;
                     openArticleViewer(post.pages, 0);
                     document.getElementById('html-header-title').innerText = post.title;
 
@@ -771,6 +776,9 @@
                         document.getElementById('side-nav-drawer').classList.remove('open');
                         document.getElementById('drawer-backdrop').style.display = 'none';
                         document.getElementById('menu-toggle-btn').innerText = '☀️';
+                    } else {
+                        // 如果从主页点进去，也立即同步一次侧边栏列表的高亮状态
+                        filterAndRenderList('drawer-list-container', getCurrentlyActiveCategory('drawer-tab-bar'), drawerSearchQuery, true);
                     }
                 };
 
@@ -787,11 +795,10 @@
 
         function closeArticleViewer() {
             document.getElementById('catalog-view').style.display = 'block';
-            document.getElementById('article-viewer-overlay').style.none = 'none';
             document.getElementById('article-viewer-overlay').style.display = 'none';
             document.getElementById('viewer-iframe').src = 'about:blank';
 
-            // 关键：返回时让主页目录强制与其点进前的过滤分类标签保持完全同步，并在列表中高亮记忆该博文行
+            // 返回时保持当前的分类过滤，内部会通过 UniqueKey 重新高亮正确的博文行
             switchActiveTabGlobal(currentOpenedFromTab);
 
             // 自动将视图平滑滚动到刚才正在看的那一行
