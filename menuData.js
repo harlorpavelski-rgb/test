@@ -3,32 +3,62 @@ var thispost = [
         "category": "盘盘",
         "posts": [
             {
-                "title": "let's以史为鉴",
-                "total_pages": 1,
+                "title": "拜读技术派圣经 第二集",
+                "total_pages": 7,
                 "pages": [
                     {
                         "title": "1",
-                        "path": "./盘盘/let's以史为鉴/1.html"
+                        "path": "./盘盘/拜读技术派圣经 第二集/1.html"
+                    },
+                    {
+                        "title": "2",
+                        "path": "./盘盘/拜读技术派圣经 第二集/2.html"
+                    },
+                    {
+                        "title": "3",
+                        "path": "./盘盘/拜读技术派圣经 第二集/3.html"
+                    },
+                    {
+                        "title": "4",
+                        "path": "./盘盘/拜读技术派圣经 第二集/4.html"
+                    },
+                    {
+                        "title": "5",
+                        "path": "./盘盘/拜读技术派圣经 第二集/5.html"
+                    },
+                    {
+                        "title": "6",
+                        "path": "./盘盘/拜读技术派圣经 第二集/6.html"
+                    },
+                    {
+                        "title": "9",
+                        "path": "./盘盘/拜读技术派圣经 第二集/9.html"
                     }
                 ]
             },
             {
-                "title": "建设 离阍家暴案文书研究",
-                "total_pages": 1,
+                "title": "拜读某圣经中，实时更新吐槽",
+                "total_pages": 5,
                 "pages": [
                     {
                         "title": "1",
-                        "path": "./盘盘/建设 离阍家暴案文书研究/1.html"
-                    }
-                ]
-            },
-            {
-                "title": "污名化她娱网站",
-                "total_pages": 1,
-                "pages": [
+                        "path": "./盘盘/拜读某圣经中，实时更新吐槽/1.html"
+                    },
                     {
-                        "title": "1",
-                        "path": "./盘盘/污名化她娱网站/1.html"
+                        "title": "2",
+                        "path": "./盘盘/拜读某圣经中，实时更新吐槽/2.html"
+                    },
+                    {
+                        "title": "3",
+                        "path": "./盘盘/拜读某圣经中，实时更新吐槽/3.html"
+                    },
+                    {
+                        "title": "4",
+                        "path": "./盘盘/拜读某圣经中，实时更新吐槽/4.html"
+                    },
+                    {
+                        "title": "5",
+                        "path": "./盘盘/拜读某圣经中，实时更新吐槽/5.html"
                     }
                 ]
             },
@@ -39,16 +69,6 @@ var thispost = [
                     {
                         "title": "1",
                         "path": "./盘盘/生活闲聊 _ 作为拉拉（前）的脱xy之路/1.html"
-                    }
-                ]
-            },
-            {
-                "title": "盘盘笑话_姐妹一起来乐一乐",
-                "total_pages": 1,
-                "pages": [
-                    {
-                        "title": "1",
-                        "path": "./盘盘/盘盘笑话_姐妹一起来乐一乐/1.html"
                     }
                 ]
             }

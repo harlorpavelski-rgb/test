@@ -21,11 +21,33 @@
             margin: 0 auto 24px auto;
             border-left: 5px solid #ff9f43;
             padding-left: 15px;
+            position: relative;
         }
         #header-container h1 { font-size: 32px; color: #d35400; font-weight: bold; margin-bottom: 12px; }
         #header-container p { font-size: 14px; color: #7f6b69; line-height: 1.6; }
 
         #main-wrapper { max-width: 1200px; width: 100%; margin: 0 auto; }
+
+        /* 统一帮助按钮样式 */
+        .help-btn {
+            background: #ff9f43;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .help-btn:hover { background: #e67e22; }
+
+        #catalog-help-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
 
         /* 导航过滤标签栏 */
         .tab-bar-common {
@@ -51,11 +73,11 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .filter-tab span { font-size: 11px; color: #ba8a75; margin-left: 4px; }
-        
+
         @media (hover: hover) {
             .filter-tab:hover, .filter-tab:focus { background: #ffe3c4 !important; color: #d35400 !important; }
         }
-        
+
         .filter-tab:active {
             transform: scale(0.96);
             background: #ffe3c4 !important;
@@ -77,9 +99,10 @@
             align-items: center;
             padding: 16px 10px;
             border-bottom: 1px dashed #f5e1cb;
-            transition: background 0.2s ease;
+            transition: background 0.2s ease, border-color 0.2s;
             width: 100%;
             gap: 20px;
+            cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
         @media (hover: hover) {
@@ -88,6 +111,16 @@
         .list-row:active {
             background: #fff5e6;
             transform: scale(0.99);
+        }
+
+        /* 高亮正在阅读的文章行样式 */
+        .list-row.active-reading {
+            background: #fff3e0 !important;
+            border-bottom: 1px solid #ffb74d !important;
+        }
+        .list-row.active-reading .row-title-link {
+            color: #e65100 !important;
+            font-weight: bold;
         }
 
         .title-wrapper {
@@ -103,7 +136,6 @@
             font-weight: 500;
             text-decoration: none;
             line-height: 1.5;
-            cursor: pointer;
             flex: 1;
             display: inline-block;
         }
@@ -137,8 +169,50 @@
             overflow: auto;
             -webkit-overflow-scrolling: touch;
             background: #ffffff;
+            user-select: none;
         }
-        #viewer-iframe { width: 100%; height: 100%; border: none; display: block; background: #ffffff; }
+        #viewer-iframe { width: 100%; height: 100%; border: none; display: block; background: #ffffff; pointer-events: auto; }
+
+        /* 顶部抬头边 */
+        #html-header-bar {
+            height: 44px;
+            background: #fffdf9;
+            border-bottom: 1px solid #ffeaa7;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+        #html-header-title {
+            font-size: 14px;
+            color: #d35400;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 75%;
+            margin: 0 auto;
+        }
+
+        /* 用于过渡的加载状态气泡提示层（仅在加载时短暂提示，触底逻辑移入iframe） */
+        #viewer-floating-tip {
+            position: absolute;
+            bottom: 66px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(40, 40, 40, 0.85);
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 100000;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            opacity: 0;
+            display: none;
+        }
 
         /* 正文底部控制栏 */
         #html-control-bar {
@@ -148,72 +222,111 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            padding: 0 15px;
+            gap: 4px;
             flex-shrink: 0;
             box-shadow: 0 -4px 15px rgba(211, 84, 0, 0.05);
             width: 100%;
         }
 
         .html-nav-btn {
-            background: #ff9f43;
-            color: white;
+            background: transparent;
+            color: #ff9f43;
             border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
+            padding: 8px 12px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
+            flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
         }
         .html-nav-btn:active:not(:disabled) {
-            transform: scale(0.95);
-            background: #e67e22;
+            color: #e67e22;
+            background: #fff5e6;
         }
-        .html-nav-btn:disabled { background: #ebdccb; color: #baad9f; cursor: not-allowed; }
-        #html-page-indicator { font-size: 14px; color: #7f6b69; font-weight: bold; min-width: 80px; text-align: center; }
+        .html-nav-btn:disabled { color: #ebdccb; cursor: not-allowed; background: transparent; }
 
-        /* 左上角悬浮菜单按钮 */
+        /* 数字页码排布 */
+        #html-page-numbers-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            overflow: hidden;
+        }
+        .page-num-btn {
+            background: transparent;
+            border: none;
+            color: #a18f8d;
+            padding: 4px 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .page-num-btn.active {
+            color: #ff9f43;
+            font-weight: bold;
+            font-size: 17px;
+        }
+        /* 省略号文本样式 */
+        .page-ellipsis {
+            color: #ebdccb;
+            font-size: 14px;
+            user-select: none;
+            padding: 0 2px;
+        }
+
+        /* 悬浮菜单按钮 */
         #menu-toggle-btn {
             position: fixed;
-            top: 15px;
-            left: 15px;
+            top: 55px;
+            right: 15px;
             z-index: 100002;
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             background: #ff9f43;
             color: white;
             border-radius: 50%;
             border: none;
             font-size: 18px;
-            cursor: pointer;
+            cursor: move;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(211, 84, 0, 0.3);
             -webkit-tap-highlight-color: transparent;
-            transition: transform 0.15s ease;
+            touch-action: none;
         }
-        #menu-toggle-btn:active { transform: scale(0.9); }
 
-        /* 侧边栏 */
+        /* 侧边栏及双侧弹出 */
         #side-nav-drawer {
             position: fixed;
             top: 0;
-            left: -380px;
-            width: 380px;
+            width: 340px;
             height: 100%;
             background: #fffdf9;
             box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
             z-index: 100010;
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 70px 15px 20px 15px;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 60px 15px 20px 15px;
             display: flex;
             flex-direction: column;
-            border-right: 3px solid #ffeaa7;
             gap: 15px;
         }
-        #side-nav-drawer.open { left: 0; }
+
+        #side-nav-drawer.from-left { left: -340px; right: auto; border-right: 3px solid #ffeaa7; border-left: none; }
+        #side-nav-drawer.from-left.open { left: 0; }
+
+        #side-nav-drawer.from-right { right: -340px; left: auto; border-left: 3px solid #ffeaa7; border-right: none; }
+        #side-nav-drawer.from-right.open { right: 0; }
 
         .drawer-close-btn {
             width: 100%;
@@ -251,10 +364,62 @@
             z-index: 100005;
         }
 
+        .immersive-hide { display: none !important; }
+
+        /* 美观的高级半透明提示蒙版弹窗 */
+        #custom-help-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(40, 30, 25, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 200000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .help-modal-card {
+            background: rgba(255, 253, 249, 0.95);
+            border: 1px solid rgba(255, 159, 67, 0.3);
+            width: 90%;
+            max-width: 320px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(211, 84, 0, 0.15);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+        .help-modal-card h3 { color: #d35400; font-size: 18px; margin-bottom: 16px; font-weight: bold; }
+        .help-item { text-align: left; background: #fffcf7; border: 1px solid #fcebda; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        .help-item p:first-child { font-weight: bold; color: #ff9f43; font-size: 13px; margin-bottom: 4px; }
+        .help-item p:last-child { color: #7f6b69; font-size: 12px; line-height: 1.4; }
+        .help-close-confirm {
+            background: #ff9f43;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: background 0.2s;
+        }
+        .help-close-confirm:active { background: #e67e22; }
+
         @media (max-width: 768px) {
             body { padding: 20px 10px; }
-            #side-nav-drawer { width: 300px; left: -300px; }
-            #html-control-bar { padding: 0 10px; height: 50px; gap: 8px; }
+            #side-nav-drawer { width: 280px; }
+            #side-nav-drawer.from-left { left: -280px; }
+            #side-nav-drawer.from-right { right: -280px; }
+            #html-control-bar { padding: 0 4px; height: 52px; gap: 2px; }
+            #html-page-numbers-wrapper { gap: 8px; }
+            .page-num-btn { font-size: 14px; padding: 4px 5px; }
+            .page-num-btn.active { font-size: 16px; }
         }
     </style>
 </head>
@@ -264,6 +429,7 @@
         <div id="header-container">
             <h1>☀️ sispost 索引</h1>
             <p>全自动本地博文检索入口。点击博文标题即可打开正文。</p>
+            <button id="catalog-help-btn" class="help-btn">💡 提示</button>
         </div>
 
         <div id="main-wrapper">
@@ -276,24 +442,47 @@
         <button id="menu-toggle-btn" title="打开菜单">☀️</button>
         <div id="drawer-backdrop"></div>
 
-        <div id="side-nav-drawer">
-            <button id="html-exit-btn" class="drawer-close-btn">返回主页目录 ↩</button>
+        <div id="side-nav-drawer" class="from-left">
             <div class="drawer-scroll-area">
                 <div id="drawer-tab-bar" class="tab-bar-common"></div>
                 <div id="drawer-list-container" class="list-container-common"></div>
             </div>
+            <button id="html-exit-btn" class="drawer-close-btn">返回主页目录 ↩</button>
         </div>
 
         <div id="viewer-main-flex">
+            <div id="html-header-bar">
+                <div style="width:50px;"></div>
+                <div id="html-header-title">正在阅读文章</div>
+                <button id="viewer-help-btn" class="help-btn">💡 提示</button>
+            </div>
+
+            <div id="viewer-floating-tip"></div>
+
             <div id="viewer-iframe-wrapper">
                 <iframe id="viewer-iframe" src="about:blank"></iframe>
             </div>
 
             <div id="html-control-bar">
                 <button id="html-prev-btn" class="html-nav-btn">← 上一页</button>
-                <span id="html-page-indicator">第 1 / 1 页</span>
+                <div id="html-page-numbers-wrapper"></div>
                 <button id="html-next-btn" class="html-nav-btn">下一页 →</button>
             </div>
+        </div>
+    </div>
+
+    <div id="custom-help-modal">
+        <div class="help-modal-card" id="help-modal-card">
+            <h3>📖 快捷操作指南</h3>
+            <div class="help-item">
+                <p>✨ 双击清屏</p>
+                <p>在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
+            </div>
+            <div class="help-item">
+                <p>🔄 左右拖拽变轨</p>
+                <p>右侧小太阳可以自由上下拖动。若将其拖至屏幕左侧，侧边栏以后将改为从左滑出；反之则从右滑出。</p>
+            </div>
+            <button class="help-close-confirm" id="help-close-btn">知道了</button>
         </div>
     </div>
 
@@ -301,6 +490,10 @@
         let activePostPages = [];
         let currentHtmlPageIndex = -1;
         let allMergedPostsGlobal = [];
+        let currentReadingPost = null;
+        let currentOpenedFromTab = 'all';
+        let isImmersiveMode = false;
+        let drawerDirection = 'left';
 
         function init() {
             if (typeof thispost === 'undefined' || !Array.isArray(thispost) || thispost.length === 0) {
@@ -328,18 +521,60 @@
                     backdrop.style.display = 'none';
                     toggleBtn.innerText = '☀️';
                 } else {
+                    if (currentReadingPost) {
+                        switchActiveTabGlobal(currentOpenedFromTab);
+                    }
                     drawer.classList.add('open');
                     backdrop.style.display = 'block';
                     toggleBtn.innerText = '✕';
                 }
             }
 
-            toggleBtn.onclick = toggleDrawer;
+            toggleBtn.onclick = (e) => {
+                if(toggleBtn.getAttribute('data-dragged') === 'true') return;
+                toggleDrawer();
+            };
             backdrop.onclick = toggleDrawer;
 
             document.getElementById('html-prev-btn').onclick = () => { if (currentHtmlPageIndex > 0) jumpToHtmlPage(currentHtmlPageIndex - 1); };
             document.getElementById('html-next-btn').onclick = () => { if (currentHtmlPageIndex < activePostPages.length - 1) jumpToHtmlPage(currentHtmlPageIndex + 1); };
             document.getElementById('html-exit-btn').onclick = () => { toggleDrawer(); closeArticleViewer(); };
+
+            document.getElementById('catalog-help-btn').onclick = openHelpModal;
+            document.getElementById('viewer-help-btn').onclick = openHelpModal;
+            document.getElementById('help-close-btn').onclick = closeHelpModal;
+            document.getElementById('custom-help-modal').onclick = function(e){
+                if(e.target === this) closeHelpModal();
+            };
+
+            initIframeAndScrollListeners();
+            initDragFeature();
+            initDoubleClickFeature();
+        }
+
+        function openHelpModal() {
+            const modal = document.getElementById('custom-help-modal');
+            const card = document.getElementById('help-modal-card');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        function closeHelpModal() {
+            const modal = document.getElementById('custom-help-modal');
+            const card = document.getElementById('help-modal-card');
+            modal.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 200);
+        }
+
+        function getCurrentlyActiveCategory(tabBarId) {
+            const activeBtn = document.querySelector(`#${tabBarId} .filter-tab.active`);
+            return activeBtn ? activeBtn.getAttribute('data-cat') : 'all';
         }
 
         function buildTabsAndList(tabBarId, listContainerId, totalCount, defaultCat, isDrawer = false) {
@@ -351,8 +586,11 @@
             allTab.setAttribute('data-cat', 'all');
             allTab.innerHTML = `☀️ 全部 <span>${totalCount}</span>`;
             allTab.onclick = () => {
-                switchActiveTabGlobal('all');
-                renderListView(listContainerId, allMergedPostsGlobal, isDrawer);
+                if(isDrawer) {
+                    switchDrawerTabOnly('all');
+                } else {
+                    switchActiveTabGlobal('all');
+                }
             };
             tabBar.appendChild(allTab);
 
@@ -362,8 +600,11 @@
                 tab.setAttribute('data-cat', catData.category);
                 tab.innerHTML = `📂 ${catData.category} <span>${catData.posts.length}</span>`;
                 tab.onclick = () => {
-                    switchActiveTabGlobal(catData.category);
-                    renderListView(listContainerId, catData.posts, isDrawer);
+                    if(isDrawer) {
+                        switchDrawerTabOnly(catData.category);
+                    } else {
+                        switchActiveTabGlobal(catData.category);
+                    }
                 };
                 tabBar.appendChild(tab);
             });
@@ -373,15 +614,22 @@
             }
         }
 
-        function switchActiveTabGlobal(targetCategory) {
-            document.querySelectorAll('.filter-tab').forEach(btn => {
-                btn.classList.remove('active');
-                btn.blur();
-            });
+        function switchDrawerTabOnly(targetCategory) {
+            document.querySelectorAll('#drawer-tab-bar .filter-tab').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`#drawer-tab-bar .filter-tab[data-cat="${targetCategory}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
 
-            document.querySelectorAll(`.filter-tab[data-cat="${targetCategory}"]`).forEach(btn => {
-                btn.classList.add('active');
-            });
+            let targetPosts = allMergedPostsGlobal;
+            if (targetCategory !== 'all') {
+                const catObj = thispost.find(c => c.category === targetCategory);
+                if (catObj) targetPosts = catObj.posts;
+            }
+            renderListView('drawer-list-container', targetPosts, true);
+        }
+
+        function switchActiveTabGlobal(targetCategory) {
+            document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll(`.filter-tab[data-cat="${targetCategory}"]`).forEach(btn => btn.classList.add('active'));
 
             let targetPosts = allMergedPostsGlobal;
             if (targetCategory !== 'all') {
@@ -406,21 +654,19 @@
                 const row = document.createElement('div');
                 row.className = 'list-row';
 
+                if (isDrawer && currentReadingPost && currentReadingPost.title === post.title) {
+                    const activeDrawerTab = getCurrentlyActiveCategory('drawer-tab-bar');
+                    if (activeDrawerTab === currentOpenedFromTab) {
+                        row.classList.add('active-reading');
+                    }
+                }
+
                 const titleWrapper = document.createElement('div');
                 titleWrapper.className = 'title-wrapper';
 
                 const titleLink = document.createElement('span');
                 titleLink.className = 'row-title-link';
                 titleLink.innerText = post.title;
-
-                titleLink.onclick = () => {
-                    openArticleViewer(post.pages, 0);
-                    if (isDrawer) {
-                        document.getElementById('side-nav-drawer').classList.remove('open');
-                        document.getElementById('drawer-backdrop').style.display = 'none';
-                        document.getElementById('menu-toggle-btn').innerText = '☀️';
-                    }
-                };
                 titleWrapper.appendChild(titleLink);
 
                 const badge = document.createElement('span');
@@ -429,6 +675,22 @@
                 titleWrapper.appendChild(badge);
 
                 row.appendChild(titleWrapper);
+
+                row.onclick = () => {
+                    currentOpenedFromTab = isDrawer ? getCurrentlyActiveCategory('drawer-tab-bar') : getCurrentlyActiveCategory('tab-filter-bar');
+
+                    currentReadingPost = post;
+                    openArticleViewer(post.pages, 0);
+                    document.getElementById('html-header-title').innerText = post.title;
+
+                    if (isDrawer) {
+                        document.getElementById('side-nav-drawer').classList.remove('open');
+                        document.getElementById('drawer-backdrop').style.display = 'none';
+                        document.getElementById('menu-toggle-btn').innerText = '☀️';
+                        switchDrawerTabOnly(currentOpenedFromTab);
+                    }
+                };
+
                 listContainer.appendChild(row);
             });
         }
@@ -440,7 +702,13 @@
             jumpToHtmlPage(index);
         }
 
-        // 直接改变 iframe 的 src，实现最原始、无干扰的 HTML 直接展示
+        function closeArticleViewer() {
+            document.getElementById('catalog-view').style.display = 'block';
+            document.getElementById('article-viewer-overlay').style.display = 'none';
+            document.getElementById('viewer-iframe').src = 'about:blank';
+            currentReadingPost = null;
+        }
+
         function jumpToHtmlPage(index) {
             if (index < 0 || index >= activePostPages.length) return;
             currentHtmlPageIndex = index;
@@ -448,22 +716,242 @@
             const iframe = document.getElementById('viewer-iframe');
             const targetPath = activePostPages[index].path;
 
-            // 清除旧的 srcdoc，直接加载原帖物理路径
+            showFloatingLoadingTip("正在加载正文...", true);
+
             iframe.removeAttribute('srcdoc');
             iframe.src = targetPath;
 
-            document.getElementById('html-page-indicator').innerText = `第 ${index + 1} / ${activePostPages.length} 页`;
+            renderRotatedPageNumbers(index, activePostPages.length);
+
             document.getElementById('html-prev-btn').disabled = (index === 0);
             document.getElementById('html-next-btn').disabled = (index === activePostPages.length - 1);
 
             document.getElementById('viewer-iframe-wrapper').scrollTop = 0;
         }
 
-        function closeArticleViewer() {
-            document.getElementById('article-viewer-overlay').style.display = 'none';
-            document.getElementById('catalog-view').style.display = 'block';
-            document.getElementById('viewer-iframe').removeAttribute('srcdoc');
-            document.getElementById('viewer-iframe').src = 'about:blank';
+        function renderRotatedPageNumbers(currentIndex, totalPages) {
+            const wrapper = document.getElementById('html-page-numbers-wrapper');
+            wrapper.innerHTML = '';
+
+            function createPageBtn(idx) {
+                const numBtn = document.createElement('button');
+                numBtn.className = 'page-num-btn';
+                if (idx === currentIndex) numBtn.classList.add('active');
+                numBtn.innerText = idx + 1;
+                numBtn.onclick = () => {
+                    if (idx !== currentHtmlPageIndex) jumpToHtmlPage(idx);
+                };
+                return numBtn;
+            }
+
+            function createEllipsis() {
+                const span = document.createElement('span');
+                span.className = 'page-ellipsis';
+                span.innerText = '...';
+                return span;
+            }
+
+            const maxVisible = 6;
+
+            if (totalPages <= maxVisible) {
+                for (let i = 0; i < totalPages; i++) {
+                    wrapper.appendChild(createPageBtn(i));
+                }
+            } else {
+                wrapper.appendChild(createPageBtn(0));
+
+                let start, end;
+                if (currentIndex <= 2) {
+                    start = 1;
+                    end = 3;
+                    for (let i = start; i <= end; i++) wrapper.appendChild(createPageBtn(i));
+                    wrapper.appendChild(createEllipsis());
+                } else if (currentIndex >= totalPages - 3) {
+                    start = totalPages - 4;
+                    end = totalPages - 2;
+                    wrapper.appendChild(createEllipsis());
+                    for (let i = start; i <= end; i++) wrapper.appendChild(createPageBtn(i));
+                } else {
+                    start = currentIndex - 1;
+                    end = currentIndex + 1;
+                    wrapper.appendChild(createEllipsis());
+                    for (let i = start; i <= end; i++) wrapper.appendChild(createPageBtn(i));
+                    wrapper.appendChild(createEllipsis());
+                }
+
+                wrapper.appendChild(createPageBtn(totalPages - 1));
+            }
+        }
+
+        let tipTimer = null;
+        function showFloatingLoadingTip(text, keepAlive = false) {
+            const tipEl = document.getElementById('viewer-floating-tip');
+            clearTimeout(tipTimer);
+            tipEl.innerText = text;
+            tipEl.style.display = 'block';
+            tipEl.style.opacity = '1';
+
+            if (!keepAlive) {
+                tipTimer = setTimeout(() => {
+                    tipEl.style.opacity = '0';
+                    setTimeout(() => { tipEl.style.display = 'none'; }, 200);
+                }, 1000);
+            }
+        }
+
+        // 🆕 核心：等待彻底加载完成后，将长条直接注入次一级背景的 body 最底部
+        function initIframeAndScrollListeners() {
+            const iframe = document.getElementById('viewer-iframe');
+
+            iframe.onload = () => {
+                showFloatingLoadingTip("正文加载完成", false);
+                try {
+                    const iframeWindow = iframe.contentWindow;
+                    const iframeDoc = iframeWindow.document || iframe.contentDocument;
+
+                    if (iframeDoc && iframeDoc.body) {
+                        // 1. 获取文章次一级背景颜色，让长条背景完美匹配它
+                        let bgStyle = iframeWindow.getComputedStyle(iframeDoc.body).backgroundColor;
+                        if (!bgStyle || bgStyle === 'transparent' || bgStyle === 'rgba(0, 0, 0, 0)') {
+                            bgStyle = '#ffffff'; // 兜底使用白色
+                        }
+
+                        // 2. 如果里面没注入过，则动态创建并塞入长条
+                        if (!iframeDoc.getElementById('injected-bottom-tip')) {
+                            const tipBar = iframeDoc.createElement('div');
+                            tipBar.id = 'injected-bottom-tip';
+                            tipBar.innerText = '💡 已阅读到文章最底部';
+
+                            // 3. 施加样式：让它衔接次一级下沿，文字风格贴近阅读器
+                            tipBar.style.cssText = `
+                                width: 100%;
+                                height: 32px;
+                                background-color: ${bgStyle};
+                                color: #d35400;
+                                border-top: 1px dashed #ffeaa7;
+                                font-size: 11px;
+                                font-family: -apple-system, sans-serif;
+                                line-height: 31px;
+                                text-align: center;
+                                font-weight: 500;
+                                letter-spacing: 0.5px;
+                                margin-top: 15px;
+                                box-sizing: border-box;
+                            `;
+                            iframeDoc.body.appendChild(tipBar);
+                        }
+
+                        // 4. 挂载双击清屏事件
+                        iframeDoc.addEventListener('dblclick', handleImmersiveToggle);
+                    }
+                } catch (e) {
+                    console.log("跨域限制或无权限操作iframe内部", e);
+                }
+            };
+        }
+
+        function initDragFeature() {
+            const btn = document.getElementById('menu-toggle-btn');
+            const drawer = document.getElementById('side-nav-drawer');
+            let isDragging = false;
+            let startX, startY, startLeft, startTop;
+
+            btn.setAttribute('data-dragged', 'false');
+
+            const onStart = (e) => {
+                isDragging = true;
+                btn.setAttribute('data-dragged', 'false');
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                startLeft = btn.offsetLeft;
+                startTop = btn.offsetTop;
+                btn.style.transition = 'none';
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                let deltaX = clientX - startX;
+                let deltaY = clientY - startY;
+
+                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                    btn.setAttribute('data-dragged', 'true');
+                }
+
+                let nextLeft = startLeft + deltaX;
+                let nextTop = startTop + deltaY;
+
+                const topBoundary = 44 + 4;
+                const bottomBoundary = window.innerHeight - 56 - btn.offsetHeight - 4;
+
+                nextLeft = Math.max(0, Math.min(window.innerWidth - btn.offsetWidth, nextLeft));
+                nextTop = Math.max(topBoundary, Math.min(bottomBoundary, nextTop));
+
+                btn.style.left = nextLeft + 'px';
+                btn.style.top = nextTop + 'px';
+                btn.style.right = 'auto';
+            };
+
+            const onEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                btn.style.transition = 'all 0.2s ease';
+
+                const halfWidth = window.innerWidth / 2;
+                const btnCenter = btn.offsetLeft + btn.offsetWidth / 2;
+
+                if (btnCenter < halfWidth) {
+                    btn.style.left = '15px';
+                    drawerDirection = 'left';
+                    drawer.className = 'from-left';
+                } else {
+                    btn.style.left = (window.innerWidth - btn.offsetWidth - 15) + 'px';
+                    drawerDirection = 'right';
+                    drawer.className = 'from-right';
+                }
+            };
+
+            btn.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            btn.addEventListener('touchstart', onStart, {passive: true});
+            window.addEventListener('touchmove', onMove, {passive: false});
+            window.addEventListener('touchend', onEnd, {passive: true});
+        }
+
+        function initDoubleClickFeature() {
+            document.getElementById('viewer-iframe-wrapper').addEventListener('dblclick', handleImmersiveToggle);
+        }
+
+        function handleImmersiveToggle() {
+            isImmersiveMode = !isImmersiveMode;
+            const elementsToToggle = [
+                document.getElementById('html-header-bar'),
+                document.getElementById('html-control-bar'),
+                document.getElementById('menu-toggle-btn')
+            ];
+
+            elementsToToggle.forEach(el => {
+                if (isImmersiveMode) {
+                    el.classList.add('immersive-hide');
+                } else {
+                    el.classList.remove('immersive-hide');
+                }
+            });
+
+            // 同时将隐藏指令投射给内部
+            try {
+                const iframeDoc = document.getElementById('viewer-iframe').contentWindow.document;
+                const innerTip = iframeDoc.getElementById('injected-bottom-tip');
+                if (innerTip) {
+                    innerTip.style.display = isImmersiveMode ? 'none' : 'block';
+                }
+            } catch(e){}
         }
 
         window.onload = init;
