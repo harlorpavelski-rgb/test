@@ -3,7 +3,7 @@ var thispost = [
         "category": "标签一",
         "posts": [
             {
-                "title": "有标签md (Markdown)",
+                "title": "有标签md (MD)",
                 "total_pages": 1,
                 "pages": [
                     {
@@ -13,7 +13,7 @@ var thispost = [
                 ]
             },
             {
-                "title": "有标签的docx (Word)",
+                "title": "有标签的docx (DOCX)",
                 "total_pages": 1,
                 "pages": [
                     {
@@ -23,7 +23,7 @@ var thispost = [
                 ]
             },
             {
-                "title": "有标签的txt (Txt)",
+                "title": "有标签的txt (TXT)",
                 "total_pages": 1,
                 "pages": [
                     {
@@ -113,7 +113,7 @@ var thispost = [
         "category": "其他",
         "posts": [
             {
-                "title": "README (Markdown)",
+                "title": "README (MD)",
                 "total_pages": 1,
                 "pages": [
                     {
@@ -123,7 +123,7 @@ var thispost = [
                 ]
             },
             {
-                "title": "无标签md (Markdown)",
+                "title": "无标签md (MD)",
                 "total_pages": 1,
                 "pages": [
                     {
@@ -133,7 +133,7 @@ var thispost = [
                 ]
             },
             {
-                "title": "无标签的txt (Txt)",
+                "title": "无标签的txt (TXT)",
                 "total_pages": 1,
                 "pages": [
                     {
