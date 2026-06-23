@@ -144,7 +144,7 @@
     <div id="catalog-view">
         <div id="header-container">
             <h1>☀️ sispost 索引</h1>
-            <p>保存sis产出，我们存在，我们相伴</p>
+            <p>存档点接受所有媎妹投稿代发，我们存在，我们不容抹去</p>
             <button id="catalog-help-btn" class="help-btn">💡 提示</button>
         </div>
         <div id="main-wrapper">
@@ -191,9 +191,22 @@
         <div class="help-modal-card" id="help-modal-card">
             <h3>📖 快捷操作指南</h3>
             <div class="help-items-scroll-zone">
-                <div class="help-item"><p>🌻 开启阅读</p><p>点击博文标题即可打开正文。</p></div>
-                <div class="help-item"><p>✨ 双击清屏</p><p>正文区域双击可隐藏或还原所有控制栏，享受纯净全屏无干扰阅读。</p></div>
-                <div class="help-item"><p>☀️ 侧边栏及滑出轨迹</p><p>点击小太阳可开闭侧边栏。你可以自由上下左右拖动它，拖到屏幕左侧后侧边栏便从左滑出，拖到右侧则改为从右滑出。</p></div>
+                <div class="help-item">
+                    <p>🌻 开启阅读</p>
+                    <p>点击博文标题即可打开正文。</p>
+                </div>
+                <div class="help-item">
+                    <p>✨ 双击清屏</p>
+                    <p>加载完成后，在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
+                </div>
+                 <div class="help-item">
+                    <p>☀️ 侧边栏唤起</p>
+                    <p>点击阅读正文区域右上角或左上角小太阳可唤出侧边栏。</p>
+                </div>
+                <div class="help-item">
+                    <p>🔄 左右拖拽变轨</p>
+                    <p>阅读正文区小太阳可以自由上下左右拖动。若将其拖至屏幕左侧，侧边栏以后将改为从左滑出；反之则从右滑出。</p>
+                </div>
             </div>
             <button class="help-close-confirm" id="help-close-btn">知道了</button>
         </div>
@@ -203,14 +216,16 @@
         let activePostPages = [];
         let currentHtmlPageIndex = -1;
         let allMergedPostsGlobal = [];
-        let currentReadingPostUniqueKey = null;
+        let currentReadingPostUniqueKey = null; // 用于存储当前阅读文章的唯一路径标识符
         let currentOpenedFromTab = 'all';
         let isImmersiveMode = false;
         let drawerDirection = 'left';
 
+        // 搜索关键词暂存
         let catalogSearchQuery = '';
         let drawerSearchQuery = '';
 
+        // 生成博文唯一标识符的辅助函数（结合名称和第一页路径）
         function getPostUniqueKey(post) {
             if (!post) return null;
             let firstPagePath = (post.pages && post.pages[0]) ? post.pages[0].path : '';
@@ -233,6 +248,7 @@
             buildTabsAndList('tab-filter-bar', 'list-container', totalCount, 'all');
             buildTabsAndList('drawer-tab-bar', 'drawer-list-container', totalCount, 'all', true);
 
+            // 绑定搜索框实时监听事件
             document.getElementById('catalog-search-input').oninput = function(e) {
                 catalogSearchQuery = e.target.value.trim().toLowerCase();
                 filterAndRenderList('list-container', getCurrentlyActiveCategory('tab-filter-bar'), catalogSearchQuery, false);
@@ -270,6 +286,8 @@
 
             document.getElementById('html-prev-btn').onclick = () => { if (currentHtmlPageIndex > 0) jumpToHtmlPage(currentHtmlPageIndex - 1); };
             document.getElementById('html-next-btn').onclick = () => { if (currentHtmlPageIndex < activePostPages.length - 1) jumpToHtmlPage(currentHtmlPageIndex + 1); };
+
+            // 绑定左上角纯文本返回动作
             document.getElementById('html-raw-back-btn').onclick = () => { closeArticleViewer(); };
 
             document.getElementById('catalog-help-btn').onclick = openHelpModal;
@@ -389,6 +407,7 @@
                         document.getElementById('drawer-backdrop').style.display = 'none';
                         document.getElementById('menu-toggle-btn').innerText = '☀️';
                     } else {
+                        // 如果从主页点进去，也立即同步一次侧边栏列表的高亮状态
                         filterAndRenderList('drawer-list-container', getCurrentlyActiveCategory('drawer-tab-bar'), drawerSearchQuery, true);
                     }
                 };
@@ -407,7 +426,11 @@
             document.getElementById('catalog-view').style.display = 'block';
             document.getElementById('article-viewer-overlay').style.display = 'none';
             document.getElementById('viewer-iframe').src = 'about:blank';
+
+            // 返回时保持当前的分类过滤，内部会通过 UniqueKey 重新高亮正确的博文行
             switchActiveTabGlobal(currentOpenedFromTab);
+
+            // 自动将视图平滑滚动到刚才正在看的那一行
             setTimeout(() => {
                 const targetRow = document.querySelector('#list-container .list-row.active-reading');
                 if (targetRow) { targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
@@ -429,7 +452,7 @@
                 iframe.removeAttribute('srcdoc');
                 iframe.src = targetPath;
             }
-else if (fileExtension === 'md') {
+            else if (fileExtension === 'md') {
                 // 【核心修复代码】抓取 Markdown 源码，转换为排版考究的阅读页面
                 fetch(targetPath)
                     .then(res => { if (!res.ok) throw new Error("无法读取Markdown文件"); return res.text(); })
@@ -587,6 +610,19 @@ else if (fileExtension === 'md') {
                     const iframeWindow = iframe.contentWindow;
                     const iframeDoc = iframeWindow.document || iframe.contentDocument;
                     if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.trim() !== "") {
+
+                        // === 处理 iframe 内部的所有超链接跳转 ===
+                        const links = iframeDoc.getElementsByTagName('a');
+                        for (let link of links) {
+                            link.addEventListener('click', function(e) {
+                                const href = this.getAttribute('href');
+                                if (!href || href.startsWith('#')) return; // 忽略空链接或页面内锚点
+
+                                e.preventDefault(); // 拦截默认在 iframe 内部跳转的行为
+                                window.open(this.href, '_blank'); // 强制在外层浏览器新标签页打开
+                            });
+                        }
+
                         let bgStyle = iframeWindow.getComputedStyle(iframeDoc.body).backgroundColor;
                         if (!bgStyle || bgStyle === 'transparent' || bgStyle === 'rgba(0, 0, 0, 0)') { bgStyle = '#ffffff'; }
 
