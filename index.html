@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>sispost</title>
     <script src="menuData.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,7 +30,6 @@
 
         #main-wrapper { max-width: 1200px; width: 100%; margin: 0 auto; }
 
-        /* 统一帮助按钮样式 */
         .help-btn {
             background: #ff9f43;
             color: white;
@@ -43,419 +44,89 @@
         }
         .help-btn:hover { background: #e67e22; }
 
-        #catalog-help-btn {
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
+        #catalog-help-btn { position: absolute; top: 0; right: 0; }
 
-        /* 搜索框统一样式 */
-        .search-box-wrapper {
-            margin-bottom: 20px;
-            width: 100%;
-        }
+        .search-box-wrapper { margin-bottom: 20px; width: 100%; }
         .search-input {
-            width: 100%;
-            padding: 10px 16px;
-            font-size: 14px;
-            border: 1px solid #fbdcbb;
-            background: #fffcf7;
-            border-radius: 8px;
-            color: #4a3e3d;
-            outline: none;
-            transition: all 0.2s ease;
+            width: 100%; padding: 10px 16px; font-size: 14px; border: 1px solid #fbdcbb;
+            background: #fffcf7; border-radius: 8px; color: #4a3e3d; outline: none; transition: all 0.2s ease;
         }
-        .search-input::placeholder {
-            color: #ebdccb;
-        }
-        .search-input:focus {
-            border-color: #ff9f43;
-            background: #ffffff;
-            box-shadow: 0 0 8px rgba(255, 159, 67, 0.15);
-        }
+        .search-input::placeholder { color: #ebdccb; }
+        .search-input:focus { border-color: #ff9f43; background: #ffffff; box-shadow: 0 0 8px rgba(255, 159, 67, 0.15); }
 
-        /* 导航过滤标签栏 */
-        .tab-bar-common {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-bottom: 2px solid #ffeaa7;
-            padding-bottom: 15px;
-        }
+        .tab-bar-common { display: flex; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid #ffeaa7; padding-bottom: 15px; }
         #tab-filter-bar { margin-bottom: 25px; }
 
         .filter-tab {
-            background: #fff5e6 !important;
-            color: #d35400 !important;
-            border: 1px solid #fbdcbb;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            outline: none !important;
-            -webkit-tap-highlight-color: transparent;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff5e6 !important; color: #d35400 !important; border: 1px solid #fbdcbb;
+            padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+            outline: none !important; -webkit-tap-highlight-color: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .filter-tab span { font-size: 11px; color: #ba8a75; margin-left: 4px; }
 
-        @media (hover: hover) {
-            .filter-tab:hover, .filter-tab:focus { background: #ffe3c4 !important; color: #d35400 !important; }
-        }
+        @media (hover: hover) { .filter-tab:hover, .filter-tab:focus { background: #ffe3c4 !important; } }
+        .filter-tab:active { transform: scale(0.96); }
+        .filter-tab.active { background: #ff9f43 !important; color: #ffffff !important; border-color: #ff9f43 !important; box-shadow: 0 4px 10px rgba(255, 159, 67, 0.25) !important; }
+        .filter-tab.active span { color: #ffffff !important; }
 
-        .filter-tab:active {
-            transform: scale(0.96);
-            background: #ffe3c4 !important;
-        }
-
-        .filter-tab.active, .filter-tab.active:hover, .filter-tab.active:focus {
-            background: #ff9f43 !important;
-            color: #ffffff !important;
-            border-color: #ff9f43 !important;
-            box-shadow: 0 4px 10px rgba(255, 159, 67, 0.25) !important;
-        }
-
-        /* 稳定的列表整行容器 */
         .list-container-common { display: block; width: 100%; }
-
         .list-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 10px;
-            border-bottom: 1px dashed #f5e1cb;
-            transition: background 0.2s ease, border-color 0.2s;
-            width: 100%;
-            gap: 20px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            display: flex; justify-content: space-between; align-items: center; padding: 16px 10px;
+            border-bottom: 1px dashed #f5e1cb; transition: background 0.2s ease; width: 100%; gap: 20px;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
         }
-        @media (hover: hover) {
-            .list-row:hover { background: #fffaf0; }
-        }
-        .list-row:active {
-            background: #fff5e6;
-            transform: scale(0.99);
-        }
+        @media (hover: hover) { .list-row:hover { background: #fffaf0; } }
+        .list-row:active { background: #fff5e6; transform: scale(0.99); }
+        .list-row.active-reading { background: #fff3e0 !important; border-bottom: 1px solid #ffb74d !important; }
+        .list-row.active-reading .row-title-link { color: #e65100 !important; font-weight: bold; }
 
-        /* 高亮正在阅读的文章行样式 */
-        .list-row.active-reading {
-            background: #fff3e0 !important;
-            border-bottom: 1px solid #ffb74d !important;
-        }
-        .list-row.active-reading .row-title-link {
-            color: #e65100 !important;
-            font-weight: bold;
-        }
+        .title-wrapper { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .row-title-link { font-size: 14px; color: #3e3433; font-weight: 500; flex: 1; }
+        .page-count-badge { background: #fef4ea; color: #e67e22; border: 1px solid #fde3ca; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 12px; white-space: nowrap; margin-left: 15px; }
 
-        .title-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .row-title-link {
-            font-size: 14px;
-            color: #3e3433;
-            font-weight: 500;
-            text-decoration: none;
-            line-height: 1.5;
-            flex: 1;
-            display: inline-block;
-        }
-
-        .page-count-badge {
-            background: #fef4ea;
-            color: #e67e22;
-            border: 1px solid #fde3ca;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 12px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            margin-left: 15px;
-        }
-
-        /* 全屏正文查看器 */
-        #article-viewer-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100dvh;
-            background: #ffffff !important;
-            z-index: 99999;
-        }
+        #article-viewer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: #ffffff !important; z-index: 99999; }
         #viewer-main-flex { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
+        #viewer-iframe-wrapper { flex: 1; width: 100%; overflow: auto; -webkit-overflow-scrolling: touch; background: #ffffff; user-select: none; }
+        #viewer-iframe { width: 100%; height: 100%; border: none; display: block; background: #ffffff; }
 
-        #viewer-iframe-wrapper {
-            flex: 1;
-            width: 100%;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-            background: #ffffff;
-            user-select: none;
-        }
-        #viewer-iframe { width: 100%; height: 100%; border: none; display: block; background: #ffffff; pointer-events: auto; }
+        #html-header-bar { height: 44px; background: #fffdf9; border-bottom: 1px solid #ffeaa7; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; flex-shrink: 0; }
+        #html-header-title { font-size: 14px; color: #d35400; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; margin: 0 auto; text-align: center; }
+        .html-back-raw-btn { background: transparent; border: none; color: #ff9f43; font-size: 22px; font-weight: bold; cursor: pointer; padding: 4px 8px; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; }
+        .html-back-raw-btn:active { transform: scale(0.85); color: #e67e22; }
 
-        /* 顶部抬头边 */
-        #html-header-bar {
-            height: 44px;
-            background: #fffdf9;
-            border-bottom: 1px solid #ffeaa7;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            justify-content: space-between;
-            flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-        }
-        #html-header-title {
-            font-size: 14px;
-            color: #d35400;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 60%;
-            margin: 0 auto;
-            text-align: center;
-        }
+        #viewer-floating-tip { position: absolute; bottom: 66px; left: 50%; transform: translateX(-50%); background: rgba(40, 40, 40, 0.85); color: #ffffff; padding: 6px 16px; border-radius: 20px; font-size: 13px; z-index: 100000; pointer-events: none; display: none; }
 
-        /* 极简左上角纯文本返回符号 */
-        .html-back-raw-btn {
-            background: transparent;
-            border: none;
-            color: #ff9f43;
-            font-size: 22px;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 4px 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
-            transition: transform 0.15s ease, color 0.15s;
-            user-select: none;
-            flex-shrink: 0;
-        }
-        .html-back-raw-btn:active {
-            transform: scale(0.85);
-            color: #e67e22;
-        }
+        #html-control-bar { height: 56px; background: #fffdf9; border-top: 2px solid #ffeaa7; display: flex; align-items: center; justify-content: center; padding: 0 15px; gap: 4px; flex-shrink: 0; width: 100%; }
+        .html-nav-btn { background: transparent; color: #ff9f43; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; -webkit-tap-highlight-color: transparent; }
+        .html-nav-btn:active:not(:disabled) { background: #fff5e6; }
+        .html-nav-btn:disabled { color: #ebdccb; cursor: not-allowed; }
 
-        /* 用于过渡的加载状态气泡提示层 */
-        #viewer-floating-tip {
-            position: absolute;
-            bottom: 66px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(40, 40, 40, 0.85);
-            color: #ffffff;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 100000;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            opacity: 0;
-            display: none;
-        }
+        #html-page-numbers-wrapper { display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .page-num-btn { background: transparent; border: none; color: #a18f8d; padding: 4px 6px; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .page-num-btn.active { color: #ff9f43; font-weight: bold; font-size: 17px; }
+        .page-ellipsis { color: #ebdccb; font-size: 14px; user-select: none; }
 
-        /* 正文底部控制栏 */
-        #html-control-bar {
-            height: 56px;
-            background: #fffdf9;
-            border-top: 2px solid #ffeaa7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 15px;
-            gap: 4px;
-            flex-shrink: 0;
-            box-shadow: 0 -4px 15px rgba(211, 84, 0, 0.05);
-            width: 100%;
-        }
+        #menu-toggle-btn { position: fixed; top: 55px; right: 15px; z-index: 100002; width: 40px; height: 40px; background: #ff9f43; color: white; border-radius: 50%; border: none; font-size: 18px; cursor: move; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(211, 84, 0, 0.3); touch-action: none; }
 
-        .html-nav-btn {
-            background: transparent;
-            color: #ff9f43;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent;
-            transition: all 0.2s ease;
-        }
-        .html-nav-btn:active:not(:disabled) {
-            color: #e67e22;
-            background: #fff5e6;
-        }
-        .html-nav-btn:disabled { color: #ebdccb; cursor: not-allowed; background: transparent; }
-
-        /* 数字页码排布 */
-        #html-page-numbers-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            overflow: hidden;
-        }
-        .page-num-btn {
-            background: transparent;
-            border: none;
-            color: #a18f8d;
-            padding: 4px 6px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .page-num-btn.active {
-            color: #ff9f43;
-            font-weight: bold;
-            font-size: 17px;
-        }
-        /* 省略号文本样式 */
-        .page-ellipsis {
-            color: #ebdccb;
-            font-size: 14px;
-            user-select: none;
-            padding: 0 2px;
-        }
-
-        /* 悬浮菜单按钮 */
-        #menu-toggle-btn {
-            position: fixed;
-            top: 55px;
-            right: 15px;
-            z-index: 100002;
-            width: 40px;
-            height: 40px;
-            background: #ff9f43;
-            color: white;
-            border-radius: 50%;
-            border: none;
-            font-size: 18px;
-            cursor: move;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(211, 84, 0, 0.3);
-            -webkit-tap-highlight-color: transparent;
-            touch-action: none;
-        }
-
-        /* 侧边栏及双侧弹出 */
-        #side-nav-drawer {
-            position: fixed;
-            top: 0;
-            width: 340px;
-            height: 100%;
-            background: #fffdf9;
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-            z-index: 100010;
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 60px 15px 20px 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        #side-nav-drawer.from-left { left: -340px; right: auto; border-right: 3px solid #ffeaa7; border-left: none; }
+        #side-nav-drawer { position: fixed; top: 0; width: 340px; height: 100%; background: #fffdf9; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1); z-index: 100010; transition: left 0.3s, right 0.3s; padding: 60px 15px 20px 15px; display: flex; flex-direction: column; gap: 15px; }
+        #side-nav-drawer.from-left { left: -340px; border-right: 3px solid #ffeaa7; }
         #side-nav-drawer.from-left.open { left: 0; }
-
-        #side-nav-drawer.from-right { right: -340px; left: auto; border-left: 3px solid #ffeaa7; border-right: none; }
+        #side-nav-drawer.from-right { right: -340px; border-left: 3px solid #ffeaa7; }
         #side-nav-drawer.from-right.open { right: 0; }
 
-        .drawer-scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-right: 4px;
-        }
-
-        #drawer-backdrop {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.2);
-            z-index: 100005;
-        }
+        .drawer-scroll-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        #drawer-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.2); z-index: 100005; }
 
         .immersive-hide { display: none !important; }
 
-        /* 半透明提示蒙版弹窗 */
-        #custom-help-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(40, 30, 25, 0.3);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 200000;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            padding: 20px;
-        }
-        .help-modal-card {
-            background: rgba(255, 253, 249, 0.95);
-            border: 1px solid rgba(255, 159, 67, 0.3);
-            width: 100%;
-            max-width: 360px;
-            max-height: 85dvh;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(211, 84, 0, 0.15);
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.2s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        .help-modal-card h3 { color: #d35400; font-size: 18px; margin-bottom: 16px; font-weight: bold; flex-shrink: 0; }
-
-        /* 提示内容支持自适应滚动 */
-        .help-items-scroll-zone {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 4px;
-            margin-bottom: 12px;
-            text-align: left;
-        }
-
+        #custom-help-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(40, 30, 25, 0.3); backdrop-filter: blur(8px); z-index: 200000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; padding: 20px; }
+        .help-modal-card { background: rgba(255, 253, 249, 0.95); border: 1px solid rgba(255, 159, 67, 0.3); width: 100%; max-width: 360px; max-height: 85dvh; border-radius: 16px; padding: 24px; text-align: center; transform: scale(0.9); transition: transform 0.2s ease; display: flex; flex-direction: column; }
+        .help-modal-card h3 { color: #d35400; font-size: 18px; margin-bottom: 16px; font-weight: bold; }
+        .help-items-scroll-zone { flex: 1; overflow-y: auto; text-align: left; margin-bottom: 12px; }
         .help-item { background: #fffcf7; border: 1px solid #fcebda; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
-        .help-item:last-child { margin-bottom: 0; }
         .help-item p:first-child { font-weight: bold; color: #ff9f43; font-size: 13px; margin-bottom: 4px; }
         .help-item p:last-child { color: #7f6b69; font-size: 12px; line-height: 1.4; }
-
-        .help-close-confirm {
-            background: #ff9f43;
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 11px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .help-close-confirm:active { background: #e67e22; }
+        .help-close-confirm { background: #ff9f43; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
         @media (max-width: 768px) {
             body { padding: 20px 10px; }
@@ -463,7 +134,6 @@
             #side-nav-drawer.from-left { left: -280px; }
             #side-nav-drawer.from-right { right: -280px; }
             #html-control-bar { padding: 0 4px; height: 52px; gap: 2px; }
-            #html-page-numbers-wrapper { gap: 8px; }
             .page-num-btn { font-size: 14px; padding: 4px 5px; }
             .page-num-btn.active { font-size: 16px; }
         }
@@ -477,9 +147,8 @@
             <p>保存sis产出，我们存在，我们相伴</p>
             <button id="catalog-help-btn" class="help-btn">💡 提示</button>
         </div>
-
         <div id="main-wrapper">
-            <div class="search-box-wrapper" id="catalog-search-wrapper">
+            <div class="search-box-wrapper">
                 <input type="text" id="catalog-search-input" class="search-input" placeholder="🔍 搜索主页博文标题...">
             </div>
             <div id="tab-filter-bar" class="tab-bar-common"></div>
@@ -490,9 +159,8 @@
     <div id="article-viewer-overlay">
         <button id="menu-toggle-btn" title="打开菜单">☀️</button>
         <div id="drawer-backdrop"></div>
-
         <div id="side-nav-drawer" class="from-left">
-            <div class="search-box-wrapper" id="drawer-search-wrapper">
+            <div class="search-box-wrapper">
                 <input type="text" id="drawer-search-input" class="search-input" placeholder="🔍 搜索侧边栏标题...">
             </div>
             <div class="drawer-scroll-area">
@@ -507,13 +175,10 @@
                 <div id="html-header-title">正在阅读文章</div>
                 <button id="viewer-help-btn" class="help-btn">💡 提示</button>
             </div>
-
             <div id="viewer-floating-tip"></div>
-
             <div id="viewer-iframe-wrapper">
                 <iframe id="viewer-iframe" src="about:blank"></iframe>
             </div>
-
             <div id="html-control-bar">
                 <button id="html-prev-btn" class="html-nav-btn">← 上一页</button>
                 <div id="html-page-numbers-wrapper"></div>
@@ -526,22 +191,9 @@
         <div class="help-modal-card" id="help-modal-card">
             <h3>📖 快捷操作指南</h3>
             <div class="help-items-scroll-zone">
-                <div class="help-item">
-                    <p>🌻 开启阅读</p>
-                    <p>点击博文标题即可打开正文。</p>
-                </div>
-                <div class="help-item">
-                    <p>✨ 双击清屏</p>
-                    <p>加载完成后，在阅读正文区域双击，可隐藏或还原顶部抬头栏、底部翻页栏及悬浮小太阳，享受无干扰阅读，再次双击可唤回。</p>
-                </div>
-                 <div class="help-item">
-                    <p>☀️ 侧边栏唤起</p>
-                    <p>点击阅读正文区域右上角或左上角小太阳可唤出侧边栏。</p>
-                </div>
-                <div class="help-item">
-                    <p>🔄 左右拖拽变轨</p>
-                    <p>阅读正文区小太阳可以自由上下左右拖动。若将其拖至屏幕左侧，侧边栏以后将改为从左滑出；反之则从右滑出。</p>
-                </div>
+                <div class="help-item"><p>🌻 开启阅读</p><p>点击博文标题即可打开正文。</p></div>
+                <div class="help-item"><p>✨ 双击清屏</p><p>正文区域双击可隐藏或还原所有控制栏，享受纯净全屏无干扰阅读。</p></div>
+                <div class="help-item"><p>☀️ 侧边栏及滑出轨迹</p><p>点击小太阳可开闭侧边栏。你可以自由上下左右拖动它，拖到屏幕左侧后侧边栏便从左滑出，拖到右侧则改为从右滑出。</p></div>
             </div>
             <button class="help-close-confirm" id="help-close-btn">知道了</button>
         </div>
@@ -551,16 +203,14 @@
         let activePostPages = [];
         let currentHtmlPageIndex = -1;
         let allMergedPostsGlobal = [];
-        let currentReadingPostUniqueKey = null; // 用于存储当前阅读文章的唯一路径标识符
+        let currentReadingPostUniqueKey = null;
         let currentOpenedFromTab = 'all';
         let isImmersiveMode = false;
         let drawerDirection = 'left';
 
-        // 搜索关键词暂存
         let catalogSearchQuery = '';
         let drawerSearchQuery = '';
 
-        // 生成博文唯一标识符的辅助函数（结合名称和第一页路径）
         function getPostUniqueKey(post) {
             if (!post) return null;
             let firstPagePath = (post.pages && post.pages[0]) ? post.pages[0].path : '';
@@ -583,17 +233,14 @@
             buildTabsAndList('tab-filter-bar', 'list-container', totalCount, 'all');
             buildTabsAndList('drawer-tab-bar', 'drawer-list-container', totalCount, 'all', true);
 
-            // 绑定搜索框实时监听事件
             document.getElementById('catalog-search-input').oninput = function(e) {
                 catalogSearchQuery = e.target.value.trim().toLowerCase();
-                const activeCat = getCurrentlyActiveCategory('tab-filter-bar');
-                filterAndRenderList('list-container', activeCat, catalogSearchQuery, false);
+                filterAndRenderList('list-container', getCurrentlyActiveCategory('tab-filter-bar'), catalogSearchQuery, false);
             };
 
             document.getElementById('drawer-search-input').oninput = function(e) {
                 drawerSearchQuery = e.target.value.trim().toLowerCase();
-                const activeCat = getCurrentlyActiveCategory('drawer-tab-bar');
-                filterAndRenderList('drawer-list-container', activeCat, drawerSearchQuery, true);
+                filterAndRenderList('drawer-list-container', getCurrentlyActiveCategory('drawer-tab-bar'), drawerSearchQuery, true);
             };
 
             const toggleBtn = document.getElementById('menu-toggle-btn');
@@ -623,16 +270,12 @@
 
             document.getElementById('html-prev-btn').onclick = () => { if (currentHtmlPageIndex > 0) jumpToHtmlPage(currentHtmlPageIndex - 1); };
             document.getElementById('html-next-btn').onclick = () => { if (currentHtmlPageIndex < activePostPages.length - 1) jumpToHtmlPage(currentHtmlPageIndex + 1); };
-
-            // 绑定左上角纯文本返回动作
             document.getElementById('html-raw-back-btn').onclick = () => { closeArticleViewer(); };
 
             document.getElementById('catalog-help-btn').onclick = openHelpModal;
             document.getElementById('viewer-help-btn').onclick = openHelpModal;
             document.getElementById('help-close-btn').onclick = closeHelpModal;
-            document.getElementById('custom-help-modal').onclick = function(e){
-                if(e.target === this) closeHelpModal();
-            };
+            document.getElementById('custom-help-modal').onclick = function(e){ if(e.target === this) closeHelpModal(); };
 
             initIframeAndScrollListeners();
             initDragFeature();
@@ -643,20 +286,14 @@
             const modal = document.getElementById('custom-help-modal');
             const card = document.getElementById('help-modal-card');
             modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.style.opacity = '1';
-                card.style.transform = 'scale(1)';
-            }, 10);
+            setTimeout(() => { modal.style.opacity = '1'; card.style.transform = 'scale(1)'; }, 10);
         }
 
         function closeHelpModal() {
             const modal = document.getElementById('custom-help-modal');
             const card = document.getElementById('help-modal-card');
-            modal.style.opacity = '0';
-            card.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 200);
+            modal.style.opacity = '0'; card.style.transform = 'scale(0.9)';
+            setTimeout(() => { modal.style.display = 'none'; }, 200);
         }
 
         function getCurrentlyActiveCategory(tabBarId) {
@@ -672,13 +309,7 @@
             allTab.className = (defaultCat === 'all') ? 'filter-tab active' : 'filter-tab';
             allTab.setAttribute('data-cat', 'all');
             allTab.innerHTML = `☀️ 全部 <span>${totalCount}</span>`;
-            allTab.onclick = () => {
-                if(isDrawer) {
-                    switchDrawerTabOnly('all');
-                } else {
-                    switchActiveTabGlobal('all');
-                }
-            };
+            allTab.onclick = () => { if(isDrawer) { switchDrawerTabOnly('all'); } else { switchActiveTabGlobal('all'); } };
             tabBar.appendChild(allTab);
 
             thispost.forEach(catData => {
@@ -686,49 +317,34 @@
                 tab.className = (defaultCat === catData.category) ? 'filter-tab active' : 'filter-tab';
                 tab.setAttribute('data-cat', catData.category);
                 tab.innerHTML = `📂 ${catData.category} <span>${catData.posts.length}</span>`;
-                tab.onclick = () => {
-                    if(isDrawer) {
-                        switchDrawerTabOnly(catData.category);
-                    } else {
-                        switchActiveTabGlobal(catData.category);
-                    }
-                };
+                tab.onclick = () => { if(isDrawer) { switchDrawerTabOnly(catData.category); } else { switchActiveTabGlobal(catData.category); } };
                 tabBar.appendChild(tab);
             });
 
-            if(!isDrawer) {
-                filterAndRenderList('list-container', 'all', catalogSearchQuery, false);
-            }
+            if(!isDrawer) { filterAndRenderList('list-container', 'all', catalogSearchQuery, false); }
         }
 
         function switchDrawerTabOnly(targetCategory) {
             document.querySelectorAll('#drawer-tab-bar .filter-tab').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`#drawer-tab-bar .filter-tab[data-cat="${targetCategory}"]`);
             if (activeBtn) activeBtn.classList.add('active');
-
             filterAndRenderList('drawer-list-container', targetCategory, drawerSearchQuery, true);
         }
 
         function switchActiveTabGlobal(targetCategory) {
             document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll(`.filter-tab[data-cat="${targetCategory}"]`).forEach(btn => btn.classList.add('active'));
-
             filterAndRenderList('list-container', targetCategory, catalogSearchQuery, false);
             filterAndRenderList('drawer-list-container', targetCategory, drawerSearchQuery, true);
         }
 
-        // 抽离出来的过滤与渲染核心逻辑，结合了分类标签与搜索框
         function filterAndRenderList(listContainerId, category, searchQuery, isDrawer = false) {
             let targetPosts = allMergedPostsGlobal;
             if (category !== 'all') {
                 const catObj = thispost.find(c => c.category === category);
                 if (catObj) targetPosts = catObj.posts;
             }
-
-            if (searchQuery) {
-                targetPosts = targetPosts.filter(post => post.title.toLowerCase().includes(searchQuery));
-            }
-
+            if (searchQuery) { targetPosts = targetPosts.filter(post => post.title.toLowerCase().includes(searchQuery)); }
             renderListView(listContainerId, targetPosts, isDrawer);
         }
 
@@ -744,11 +360,7 @@
             postsArray.forEach(post => {
                 const row = document.createElement('div');
                 row.className = 'list-row';
-
-                // 核心重构：移除标签必须相同的硬性限制，改用基于唯一路径的 UniqueKey 做精准匹配
-                if (currentReadingPostUniqueKey && currentReadingPostUniqueKey === getPostUniqueKey(post)) {
-                    row.classList.add('active-reading');
-                }
+                if (currentReadingPostUniqueKey && currentReadingPostUniqueKey === getPostUniqueKey(post)) { row.classList.add('active-reading'); }
 
                 const titleWrapper = document.createElement('div');
                 titleWrapper.className = 'title-wrapper';
@@ -767,7 +379,7 @@
 
                 row.onclick = () => {
                     currentOpenedFromTab = isDrawer ? getCurrentlyActiveCategory('drawer-tab-bar') : getCurrentlyActiveCategory('tab-filter-bar');
-                    currentReadingPostUniqueKey = getPostUniqueKey(post); // 锁定唯一路径Key
+                    currentReadingPostUniqueKey = getPostUniqueKey(post);
 
                     openArticleViewer(post.pages, 0);
                     document.getElementById('html-header-title').innerText = post.title;
@@ -777,11 +389,9 @@
                         document.getElementById('drawer-backdrop').style.display = 'none';
                         document.getElementById('menu-toggle-btn').innerText = '☀️';
                     } else {
-                        // 如果从主页点进去，也立即同步一次侧边栏列表的高亮状态
                         filterAndRenderList('drawer-list-container', getCurrentlyActiveCategory('drawer-tab-bar'), drawerSearchQuery, true);
                     }
                 };
-
                 listContainer.appendChild(row);
             });
         }
@@ -797,89 +407,165 @@
             document.getElementById('catalog-view').style.display = 'block';
             document.getElementById('article-viewer-overlay').style.display = 'none';
             document.getElementById('viewer-iframe').src = 'about:blank';
-
-            // 返回时保持当前的分类过滤，内部会通过 UniqueKey 重新高亮正确的博文行
             switchActiveTabGlobal(currentOpenedFromTab);
-
-            // 自动将视图平滑滚动到刚才正在看的那一行
             setTimeout(() => {
                 const targetRow = document.querySelector('#list-container .list-row.active-reading');
-                if (targetRow) {
-                    targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                }
+                if (targetRow) { targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
             }, 60);
         }
 
+        // 核心渲染函数
         function jumpToHtmlPage(index) {
             if (index < 0 || index >= activePostPages.length) return;
             currentHtmlPageIndex = index;
 
             const iframe = document.getElementById('viewer-iframe');
             const targetPath = activePostPages[index].path;
+            const fileExtension = targetPath.split('.').pop().toLowerCase();
 
             showFloatingLoadingTip("正在加载正文...", true);
 
-            iframe.removeAttribute('srcdoc');
-            iframe.src = targetPath;
+            if (fileExtension === 'html' || fileExtension === 'htm') {
+                iframe.removeAttribute('srcdoc');
+                iframe.src = targetPath;
+            }
+else if (fileExtension === 'md') {
+                // 【核心修复代码】抓取 Markdown 源码，转换为排版考究的阅读页面
+                fetch(targetPath)
+                    .then(res => { if (!res.ok) throw new Error("无法读取Markdown文件"); return res.text(); })
+                    .then(text => {
+                        // 1. 提取出当前 Markdown 文件所在的目录路径，作为 Base URL
+                        let baseDir = targetPath.substring(0, targetPath.lastIndexOf('/') + 1);
+
+                        // 2. 使用 marked 解析库转换源码
+                        let compiledHtml = marked.parse(text);
+                        let htmlContent = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <base href="${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1)}${baseDir}">
+                                <style>
+                                    body {
+                                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                                        padding: 25px; line-height: 1.8; color: #4a3e3d; background: #ffffff; font-size: 16px;
+                                        word-wrap: break-word;
+                                    }
+                                    h1, h2, h3, h4 { color: #d35400; margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
+                                    h1 { font-size: 24px; border-bottom: 1px solid #ffeaa7; padding-bottom: 6px; }
+                                    h2 { font-size: 20px; }
+                                    h3 { font-size: 18px; }
+                                    p { margin-bottom: 14px; text-align: justify; text-indent: 2em; }
+                                    ul, ol { padding-left: 25px; margin-bottom: 14px; }
+                                    li { margin-bottom: 4px; }
+                                    code { background: #fff5e6; color: #d35400; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 14px; }
+                                    pre { background: #fffcf7; border: 1px solid #ebdccb; padding: 12px; border-radius: 8px; overflow-x: auto; margin-bottom: 14px; }
+                                    pre code { background: transparent; padding: 0; }
+                                    blockquote { border-left: 4px solid #ff9f43; background: #fffdf9; padding: 10px 15px; color: #7f6b69; margin-bottom: 14px; font-style: italic; }
+                                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 14px; }
+                                    th, td { border: 1px solid #ebdccb; padding: 8px; text-align: left; }
+                                    th { background-color: #fff5e6; }
+                                    /* 补充图片自适应样式 */
+                                    img { max-width: 100%; height: auto; display: block; margin: 10px auto; }
+                                </style>
+                            </head>
+                            <body>${compiledHtml}</body>
+                            </html>
+                        `;
+                        iframe.removeAttribute('src');
+                        iframe.srcdoc = htmlContent;
+                    })
+                    .catch(err => { iframe.srcdoc = `<div style="color:red;padding:20px;">Markdown解析失败: ${err.message}</div>`; });
+            }
+            else if (fileExtension === 'txt') {
+                fetch(targetPath)
+                    .then(res => { if (!res.ok) throw new Error("无法读取目标文本文件"); return res.text(); })
+                    .then(text => {
+                        let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        let htmlContent = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <style>
+                                    body { font-family: -apple-system, sans-serif; padding: 20px; line-height: 1.7; color: #4a3e3d; background: #ffffff; white-space: pre-wrap; word-wrap: break-word; font-size: 15px; text-indent: 2em; }
+                                </style>
+                            </head>
+                            <body>${safeText}</body>
+                            </html>
+                        `;
+                        iframe.removeAttribute('src'); iframe.srcdoc = htmlContent;
+                    })
+                    .catch(err => { iframe.srcdoc = `<div style="color:red;padding:20px;">文件加载失败: ${err.message}</div>`; });
+            }
+            else if (fileExtension === 'docx') {
+                fetch(targetPath)
+                    .then(res => { if (!res.ok) throw new Error("无法提取本地 Word 数据流"); return res.arrayBuffer(); })
+                    .then(arrayBuffer => { return mammoth.convertToHtml({ arrayBuffer: arrayBuffer }); })
+                    .then(result => {
+                        let htmlContent = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <style>
+                                    body { font-family: -apple-system, sans-serif; padding: 25px; line-height: 1.8; color: #4a3e3d; background: #ffffff; font-size: 16px; }
+                                    p { margin-bottom: 14px; text-align: justify; }
+                                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 14px; }
+                                    th, td { border: 1px solid #ebdccb; padding: 8px; text-align: left; }
+                                    th { background-color: #fff5e6; }
+                                    img { max-width: 100%; height: auto; display: block; margin: 10px auto; }
+                                </style>
+                            </head>
+                            <body>${result.value || '<p style="color:#999;text-align:center;">空文档</p>'}</body>
+                            </html>
+                        `;
+                        iframe.removeAttribute('src'); iframe.srcdoc = htmlContent;
+                    })
+                    .catch(err => { iframe.srcdoc = `<div style="color:red;padding:20px;">docx 解析失败: ${err.message}</div>`; });
+            }
 
             renderRotatedPageNumbers(index, activePostPages.length);
-
             document.getElementById('html-prev-btn').disabled = (index === 0);
             document.getElementById('html-next-btn').disabled = (index === activePostPages.length - 1);
-
             document.getElementById('viewer-iframe-wrapper').scrollTop = 0;
         }
 
         function renderRotatedPageNumbers(currentIndex, totalPages) {
             const wrapper = document.getElementById('html-page-numbers-wrapper');
             wrapper.innerHTML = '';
-
             function createPageBtn(idx) {
-                const numBtn = document.createElement('button');
-                numBtn.className = 'page-num-btn';
+                const numBtn = document.createElement('button'); numBtn.className = 'page-num-btn';
                 if (idx === currentIndex) numBtn.classList.add('active');
                 numBtn.innerText = idx + 1;
-                numBtn.onclick = () => {
-                    if (idx !== currentHtmlPageIndex) jumpToHtmlPage(idx);
-                };
+                numBtn.onclick = () => { if (idx !== currentHtmlPageIndex) jumpToHtmlPage(idx); };
                 return numBtn;
             }
-
-            function createEllipsis() {
-                const span = document.createElement('span');
-                span.className = 'page-ellipsis';
-                span.innerText = '...';
-                return span;
-            }
+            function createEllipsis() { const span = document.createElement('span'); span.className = 'page-ellipsis'; span.innerText = '...'; return span; }
 
             const maxVisible = 6;
-
             if (totalPages <= maxVisible) {
-                for (let i = 0; i < totalPages; i++) {
-                    wrapper.appendChild(createPageBtn(i));
-                }
+                for (let i = 0; i < totalPages; i++) wrapper.appendChild(createPageBtn(i));
             } else {
                 wrapper.appendChild(createPageBtn(0));
-
                 let start, end;
                 if (currentIndex <= 2) {
-                    start = 1;
-                    end = 3;
+                    start = 1; end = 3;
                     for (let i = start; i <= end; i++) wrapper.appendChild(createPageBtn(i));
                     wrapper.appendChild(createEllipsis());
                 } else if (currentIndex >= totalPages - 3) {
-                    start = totalPages - 4;
-                    end = totalPages - 2;
+                    start = totalPages - 4; end = totalPages - 2;
                     wrapper.appendChild(createEllipsis());
                     for (let i = start; i <= end; i++) wrapper.appendChild(createPageBtn(i));
                 } else {
-                    start = currentIndex - 1;
-                    end = currentIndex + 1;
+                    start = currentIndex - 1; end = currentIndex + 1;
                     wrapper.appendChild(createEllipsis());
                     for (let i = start; i <= end; i++) wrapper.appendChild(createPageBtn(i));
                     wrapper.appendChild(createEllipsis());
                 }
-
                 wrapper.appendChild(createPageBtn(totalPages - 1));
             }
         }
@@ -887,174 +573,75 @@
         let tipTimer = null;
         function showFloatingLoadingTip(text, keepAlive = false) {
             const tipEl = document.getElementById('viewer-floating-tip');
-            clearTimeout(tipTimer);
-            tipEl.innerText = text;
-            tipEl.style.display = 'block';
-            tipEl.style.opacity = '1';
-
+            clearTimeout(tipTimer); tipEl.innerText = text; tipEl.style.display = 'block'; tipEl.style.opacity = '1';
             if (!keepAlive) {
-                tipTimer = setTimeout(() => {
-                    tipEl.style.opacity = '0';
-                    setTimeout(() => { tipEl.style.display = 'none'; }, 200);
-                }, 1000);
+                tipTimer = setTimeout(() => { tipEl.style.opacity = '0'; setTimeout(() => { tipEl.style.display = 'none'; }, 200); }, 1000);
             }
         }
 
         function initIframeAndScrollListeners() {
             const iframe = document.getElementById('viewer-iframe');
-
             iframe.onload = () => {
                 showFloatingLoadingTip("正文加载完成", false);
                 try {
                     const iframeWindow = iframe.contentWindow;
                     const iframeDoc = iframeWindow.document || iframe.contentDocument;
-
-                    if (iframeDoc && iframeDoc.body) {
+                    if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.trim() !== "") {
                         let bgStyle = iframeWindow.getComputedStyle(iframeDoc.body).backgroundColor;
-                        if (!bgStyle || bgStyle === 'transparent' || bgStyle === 'rgba(0, 0, 0, 0)') {
-                            bgStyle = '#ffffff';
-                        }
+                        if (!bgStyle || bgStyle === 'transparent' || bgStyle === 'rgba(0, 0, 0, 0)') { bgStyle = '#ffffff'; }
 
                         if (!iframeDoc.getElementById('injected-bottom-tip')) {
-                            const tipBar = iframeDoc.createElement('div');
-                            tipBar.id = 'injected-bottom-tip';
-                            tipBar.innerText = '💡 已阅读到文章最底部';
-
-                            tipBar.style.cssText = `
-                                width: 100%;
-                                height: 32px;
-                                background-color: ${bgStyle};
-                                color: #d35400;
-                                border-top: 1px dashed #ffeaa7;
-                                font-size: 11px;
-                                font-family: -apple-system, sans-serif;
-                                line-height: 31px;
-                                text-align: center;
-                                font-weight: 500;
-                                letter-spacing: 0.5px;
-                                margin-top: 15px;
-                                box-sizing: border-box;
-                            `;
+                            const tipBar = iframeDoc.createElement('div'); tipBar.id = 'injected-bottom-tip'; tipBar.innerText = '💡 已阅读到文章最底部';
+                            tipBar.style.cssText = `width: 100%; height: 32px; background-color: ${bgStyle}; color: #d35400; border-top: 1px dashed #ffeaa7; font-size: 11px; line-height: 31px; text-align: center; font-weight: 500; margin-top: 15px; box-sizing: border-box;`;
                             iframeDoc.body.appendChild(tipBar);
                         }
-
+                        iframeDoc.removeEventListener('dblclick', handleImmersiveToggle);
                         iframeDoc.addEventListener('dblclick', handleImmersiveToggle);
                     }
-                } catch (e) {
-                    console.log("跨域限制或无权限操作iframe内部", e);
-                }
+                } catch (e) { console.log("跨域限制或文档暂未完全就绪", e); }
             };
         }
 
         function initDragFeature() {
             const btn = document.getElementById('menu-toggle-btn');
             const drawer = document.getElementById('side-nav-drawer');
-            let isDragging = false;
-            let startX, startY, startLeft, startTop;
-
+            let isDragging = false; let startX, startY, startLeft, startTop;
             btn.setAttribute('data-dragged', 'false');
 
             const onStart = (e) => {
-                isDragging = true;
-                btn.setAttribute('data-dragged', 'false');
+                isDragging = true; btn.setAttribute('data-dragged', 'false');
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                startX = clientX;
-                startY = clientY;
-                startLeft = btn.offsetLeft;
-                startTop = btn.offsetTop;
+                startX = clientX; startY = clientY; startLeft = btn.offsetLeft; startTop = btn.offsetTop;
                 btn.style.transition = 'none';
             };
-
             const onMove = (e) => {
                 if (!isDragging) return;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-                let deltaX = clientX - startX;
-                let deltaY = clientY - startY;
-
-                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-                    btn.setAttribute('data-dragged', 'true');
-                }
-
-                let nextLeft = startLeft + deltaX;
-                let nextTop = startTop + deltaY;
-
-                const topBoundary = 44 + 4;
-                const bottomBoundary = window.innerHeight - 56 - btn.offsetHeight - 4;
-
+                let deltaX = clientX - startX; let deltaY = clientY - startY;
+                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) { btn.setAttribute('data-dragged', 'true'); }
+                let nextLeft = startLeft + deltaX; let nextTop = startTop + deltaY;
+                const topBoundary = 44 + 4; const bottomBoundary = window.innerHeight - 56 - btn.offsetHeight - 4;
                 nextLeft = Math.max(0, Math.min(window.innerWidth - btn.offsetWidth, nextLeft));
                 nextTop = Math.max(topBoundary, Math.min(bottomBoundary, nextTop));
-
-                btn.style.left = nextLeft + 'px';
-                btn.style.top = nextTop + 'px';
-                btn.style.right = 'auto';
+                btn.style.left = nextLeft + 'px'; btn.style.top = nextTop + 'px'; btn.style.right = 'auto';
             };
-
             const onEnd = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                btn.style.transition = 'all 0.2s ease';
-
-                const halfWidth = window.innerWidth / 2;
-                const btnCenter = btn.offsetLeft + btn.offsetWidth / 2;
-
-                if (btnCenter < halfWidth) {
-                    btn.style.left = '15px';
-                    drawerDirection = 'left';
-                    drawer.className = 'from-left';
-                } else {
-                    btn.style.left = (window.innerWidth - btn.offsetWidth - 15) + 'px';
-                    drawerDirection = 'right';
-                    drawer.className = 'from-right';
-                }
+                if (!isDragging) return; isDragging = false; btn.style.transition = 'all 0.2s ease';
+                const halfWidth = window.innerWidth / 2; const btnCenter = btn.offsetLeft + btn.offsetWidth / 2;
+                if (btnCenter < halfWidth) { btn.style.left = '15px'; drawerDirection = 'left'; drawer.className = 'from-left'; }
+                else { btn.style.left = (window.innerWidth - btn.offsetWidth - 15) + 'px'; drawerDirection = 'right'; drawer.className = 'from-right'; }
             };
-
-            btn.addEventListener('mousedown', onStart);
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('mouseup', onEnd);
-
-            btn.addEventListener('touchstart', onStart, {passive: true});
-            window.addEventListener('touchmove', onMove, {passive: false});
-            window.addEventListener('touchend', onEnd, {passive: true});
-
-            window.addEventListener('resize', () => {
-                if (isDragging) return;
-
-                const topBoundary = 44 + 4;
-                const bottomBoundary = window.innerHeight - 56 - btn.offsetHeight - 4;
-                let currentTop = btn.offsetTop;
-                currentTop = Math.max(topBoundary, Math.min(bottomBoundary, currentTop));
-                btn.style.top = currentTop + 'px';
-
-                if (drawerDirection === 'left') {
-                    btn.style.left = '15px';
-                } else {
-                    btn.style.left = (window.innerWidth - btn.offsetWidth - 15) + 'px';
-                }
-            });
+            btn.addEventListener('mousedown', onStart); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onEnd);
+            btn.addEventListener('touchstart', onStart, {passive: true}); window.addEventListener('touchmove', onMove, {passive: false}); window.addEventListener('touchend', onEnd, {passive: true});
         }
 
-        function initDoubleClickFeature() {
-            document.getElementById('viewer-iframe-wrapper').addEventListener('dblclick', handleImmersiveToggle);
-        }
-
+        function initDoubleClickFeature() { document.getElementById('viewer-iframe-wrapper').addEventListener('dblclick', handleImmersiveToggle); }
         function handleImmersiveToggle() {
             isImmersiveMode = !isImmersiveMode;
-            const elementsToToggle = [
-                document.getElementById('html-header-bar'),
-                document.getElementById('html-control-bar'),
-                document.getElementById('menu-toggle-btn')
-            ];
-
-            elementsToToggle.forEach(el => {
-                if (isImmersiveMode) {
-                    el.classList.add('immersive-hide');
-                } else {
-                    el.classList.remove('immersive-hide');
-                }
-            });
+            const elementsToToggle = [document.getElementById('html-header-bar'), document.getElementById('html-control-bar'), document.getElementById('menu-toggle-btn')];
+            elementsToToggle.forEach(el => { if (isImmersiveMode) { el.classList.add('immersive-hide'); } else { el.classList.remove('immersive-hide'); } });
         }
 
         window.onload = init;

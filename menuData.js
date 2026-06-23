@@ -1,5 +1,40 @@
 var thispost = [
     {
+        "category": "标签一",
+        "posts": [
+            {
+                "title": "有标签md (Markdown)",
+                "total_pages": 1,
+                "pages": [
+                    {
+                        "title": "有标签md",
+                        "path": "./标签一/有标签md.md"
+                    }
+                ]
+            },
+            {
+                "title": "有标签的docx (Word)",
+                "total_pages": 1,
+                "pages": [
+                    {
+                        "title": "有标签的docx",
+                        "path": "./标签一/有标签的docx.docx"
+                    }
+                ]
+            },
+            {
+                "title": "有标签的txt (Txt)",
+                "total_pages": 1,
+                "pages": [
+                    {
+                        "title": "有标签的txt",
+                        "path": "./标签一/有标签的txt.txt"
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "category": "盘盘",
         "posts": [
             {
@@ -69,6 +104,41 @@ var thispost = [
                     {
                         "title": "1",
                         "path": "./盘盘/生活闲聊 _ 作为拉拉（前）的脱xy之路/1.html"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "category": "其他",
+        "posts": [
+            {
+                "title": "README (Markdown)",
+                "total_pages": 1,
+                "pages": [
+                    {
+                        "title": "README",
+                        "path": "./README.md"
+                    }
+                ]
+            },
+            {
+                "title": "无标签md (Markdown)",
+                "total_pages": 1,
+                "pages": [
+                    {
+                        "title": "无标签md",
+                        "path": "./无标签md.md"
+                    }
+                ]
+            },
+            {
+                "title": "无标签的txt (Txt)",
+                "total_pages": 1,
+                "pages": [
+                    {
+                        "title": "无标签的txt",
+                        "path": "./无标签的txt.txt"
                     }
                 ]
             }
